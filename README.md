@@ -8,8 +8,6 @@
 
 **Chalo Kisaan** is a Progressive Web Application (PWA) designed to empower small-scale farmers across India to establish and scale profitable agritourism businesses. By combining voice-first interfaces, artificial intelligence, and offline-first architecture, Chalo Kisaan bridges the gap between traditional farming and modern tourism entrepreneurship.
 
-### Tech Stack
-
 ![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.104-009688?style=flat-square&logo=fastapi)
