@@ -1,6 +1,6 @@
-# Chalo Kisaan - Agritourism
+# Chalo Kisaan - Agritourism PWA
 
-![Chalo Kisaan Logo](media/Logo-Primary.png)
+<img src="media/Logo-Primary.png" alt="Chalo Kisaan Logo" width="150" height="150" />
 
 ## Overview
 
