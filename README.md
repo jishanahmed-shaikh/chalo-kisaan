@@ -1,10 +1,29 @@
-# Chalo Kisaan - Agritourism PWA
+<div align="center">
+
+# Chalo Kisaan
 
 <img src="media/Logo-Primary.png" alt="Chalo Kisaan Logo" width="150" height="150" />
 
-## Overview
+## Empowering Farmers Through Agritourism
 
 **Chalo Kisaan** is a Progressive Web Application (PWA) designed to empower small-scale farmers across India to establish and scale profitable agritourism businesses. By combining voice-first interfaces, artificial intelligence, and offline-first architecture, Chalo Kisaan bridges the gap between traditional farming and modern tourism entrepreneurship.
+
+### Tech Stack
+
+![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.104-009688?style=flat-square&logo=fastapi)
+![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python)
+![AWS](https://img.shields.io/badge/AWS-Services-FF9900?style=flat-square&logo=amazon-aws)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-12+-336791?style=flat-square&logo=postgresql)
+![PWA](https://img.shields.io/badge/PWA-Enabled-5A0FC2?style=flat-square&logo=pwa)
+![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
+
+</div>
+
+---
+
+## Overview
 
 The platform addresses a critical market need: while millions of Indian farmers possess valuable agricultural land, many lack the business acumen, technical skills, and visualization capabilities to convert their farms into successful tourism destinations. Chalo Kisaan democratizes agritourism by making business planning accessible through voice interaction in local languages (Hindi, Marathi, English).
 
