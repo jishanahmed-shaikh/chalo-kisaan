@@ -481,25 +481,21 @@ We welcome contributions from developers, designers, and domain experts. Please 
 
 ## Roadmap
 
-### Q1 2026
-- [ ] MVP launch with core features
-- [ ] Voice onboarding in Hindi and Marathi
+### Hackathon MVP
+- [ ] Core infrastructure and setup
+- [ ] Voice onboarding with transcription
 - [ ] Basic business plan generation
-- [ ] Offline functionality
-
-### Q2 2026
 - [ ] Dream visualization feature
+- [ ] Offline functionality
+- [ ] Dashboard and project management
+- [ ] PDF export capability
 - [ ] Cross-device synchronization
-- [ ] Professional PDF export
-- [ ] Mobile app optimization
 
-### Q3 2026
+### Post-Hackathon Enhancements
 - [ ] Advanced analytics dashboard
 - [ ] Multi-language support expansion
 - [ ] Integration with banking partners
 - [ ] Farmer community features
-
-### Q4 2026
 - [ ] AI-powered recommendations
 - [ ] Seasonal planning features
 - [ ] Market price integration
