@@ -1,0 +1,47 @@
+.field-mic {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1.5px solid var(--ink-faint);
+  background: var(--paper);
+  color: var(--ink-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.field-mic:hover:not(:disabled) {
+  border-color: var(--forest);
+  color: var(--forest);
+  background: var(--paper-fold);
+}
+
+.field-mic--active {
+  border-color: var(--terracotta);
+  background: var(--terracotta);
+  color: #fff;
+}
+
+.field-mic:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* pulsing ring while recording */
+.field-mic__ring {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid var(--terracotta);
+  animation: fmic-pulse 1s ease-out infinite;
+  pointer-events: none;
+}
+
+@keyframes fmic-pulse {
+  0%   { opacity: 0.8; transform: scale(1); }
+  100% { opacity: 0;   transform: scale(1.7); }
+}

@@ -1,0 +1,40 @@
+{
+  "short_name": "Chalo Kisaan",
+  "name": "Chalo Kisaan - AI Agritourism Planner",
+  "description": "Transform your farm into a thriving agritourism destination with AI",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "apple-touch-icon.png",
+      "type": "image/png",
+      "sizes": "180x180"
+    }
+  ],
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "theme_color": "#1a3a1a",
+  "background_color": "#0d1f0d",
+  "orientation": "portrait-primary",
+  "categories": ["agriculture", "business", "productivity"],
+  "lang": "en-IN",
+  "dir": "ltr",
+  "prefer_related_applications": false
+}

@@ -1,0 +1,44 @@
+.narrator-btn {
+  position: fixed;
+  bottom: 88px;
+  right: 18px;
+  z-index: 300;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1.5px solid var(--forest);
+  background: var(--parchment);
+  color: var(--forest);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.13);
+  transition: background 0.18s, color 0.18s, transform 0.15s;
+}
+
+.narrator-btn:hover {
+  background: var(--forest);
+  color: var(--parchment);
+  transform: scale(1.08);
+}
+
+.narrator-btn--speaking {
+  background: var(--forest);
+  color: var(--parchment);
+}
+
+/* Pulsing ring when speaking */
+.narrator-btn__pulse {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid var(--forest);
+  animation: narrator-pulse 1.2s ease-out infinite;
+  pointer-events: none;
+}
+
+@keyframes narrator-pulse {
+  0%   { opacity: 0.7; transform: scale(1); }
+  100% { opacity: 0;   transform: scale(1.55); }
+}
