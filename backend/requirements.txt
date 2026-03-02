@@ -1,21 +1,38 @@
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
-pydantic==2.5.0
-pydantic-settings==2.1.0
-sqlalchemy==2.0.23
+# ── Web Framework ─────────────────────────────────────────────────────────────
+fastapi==0.110.0
+uvicorn[standard]==0.29.0
+python-multipart==0.0.9      # file uploads
+
+# ── Data Validation ───────────────────────────────────────────────────────────
+pydantic==2.6.4
+pydantic-settings==2.2.1
+
+# ── Database ──────────────────────────────────────────────────────────────────
+sqlalchemy==2.0.29
 psycopg2-binary==2.9.9
-alembic==1.13.0
-python-dotenv==1.0.0
-boto3==1.29.7
-python-multipart==0.0.6
+alembic==1.13.1
+
+# ── AWS SDK ───────────────────────────────────────────────────────────────────
+boto3==1.34.74               # core SDK: Bedrock, S3, Transcribe, Polly, DynamoDB
+botocore==1.34.74
+sagemaker==2.214.0           # SageMaker training + deployment (Phase 3)
+
+# ── Auth ──────────────────────────────────────────────────────────────────────
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
-email-validator==2.1.0
-httpx==0.25.2
-pytest==7.4.3
-pytest-asyncio==0.21.1
-hypothesis==6.88.0
-pytest-cov==4.1.0
-black==23.12.0
-flake8==6.1.0
-mypy==1.7.1
+
+# ── Utilities ─────────────────────────────────────────────────────────────────
+python-dotenv==1.0.1
+httpx==0.27.0
+email-validator==2.1.1
+
+# ── Testing ───────────────────────────────────────────────────────────────────
+pytest==8.1.1
+pytest-asyncio==0.23.6
+pytest-cov==5.0.0
+hypothesis==6.100.0
+
+# ── Code Quality ─────────────────────────────────────────────────────────────
+black==24.3.0
+flake8==7.0.0
+mypy==1.9.0
