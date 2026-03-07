@@ -7,11 +7,14 @@ Frontend expects: {success: true, analysis: {agritourismPotential, visualObserva
 
 from __future__ import annotations
 import asyncio
+import json
 import logging
 
 from fastapi import APIRouter, File, UploadFile, HTTPException
 
 from app.services import bedrock
+from app.schemas.schemas import LandVisualizationRequest
+from app.services.bedrock import generate_image_prompt, generate_land_visualization
 from app.utils.s3 import upload_file
 from app.utils.dynamo import log_event
 
@@ -61,3 +64,49 @@ async def analyze_image(image: UploadFile = File(...)):
         "s3_key": s3_result["key"],
         "url": s3_result["url"],
     }
+
+
+@router.post("/visualize-land")
+async def visualize_land(req: LandVisualizationRequest):
+    """
+    Generate an AI visualization of the farm with selected agrotourism services.
+    Uses Nova Pro to craft a prompt, then Nova Canvas to generate the image.
+    """
+    try:
+        # Decode image so Nova Pro can see the actual farm photo
+        import base64 as b64mod
+        image_bytes = b64mod.b64decode(req.imageBase64)
+
+        # Step 1: Use Nova Pro (with the image) to generate a grounded prompt
+        prompt_data = await asyncio.to_thread(
+            generate_image_prompt,
+            req.services,
+            req.farmData,
+            req.mode,
+            image_bytes,
+        )
+        logger.info("Generated image prompt: %s", json.dumps(prompt_data)[:200])
+
+        # Step 2: Generate image with Nova Canvas
+        result_image_b64 = await asyncio.to_thread(
+            generate_land_visualization,
+            req.imageBase64,
+            prompt_data,
+            req.mode,
+        )
+
+        log_event("land_visualized", {
+            "mode": req.mode,
+            "services": req.services,
+        })
+
+        return {
+            "success": True,
+            "generatedImage": result_image_b64,
+            "prompt": prompt_data,
+            "mode": req.mode,
+        }
+
+    except Exception as e:
+        logger.error("Land visualization failed: %s", e, exc_info=True)
+        raise HTTPException(status_code=502, detail=f"Visualization failed: {e}")

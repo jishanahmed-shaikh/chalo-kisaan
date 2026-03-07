@@ -43,3 +43,6 @@ coverage/
 # AWS
 .aws/
 aws-credentials.json
+
+.claude/
+/.claude

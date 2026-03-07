@@ -32,6 +32,7 @@ class Settings(BaseSettings):
     # Bedrock
     BEDROCK_MODEL_ID: str = "us.amazon.nova-pro-v1:0"
     BEDROCK_LIGHT_MODEL_ID: str = "us.amazon.nova-lite-v1:0"
+    BEDROCK_IMAGE_MODEL_ID: str = "amazon.nova-canvas-v1:0"
     BEDROCK_MAX_TOKENS: int = 4096
     BEDROCK_REGION: str = "us-east-1"
 

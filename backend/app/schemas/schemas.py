@@ -32,6 +32,14 @@ class VisualizationRequest(BaseModel):
     planData: dict[str, Any]
 
 
+class LandVisualizationRequest(BaseModel):
+    imageBase64: str
+    services: list[str]
+    farmData: dict[str, Any]
+    mode: str = "transform"  # "transform" or "inpaint"
+    planSummary: str = ""
+
+
 # -----------------------------------------------------------------
 # Voice / Transcribe
 # -----------------------------------------------------------------

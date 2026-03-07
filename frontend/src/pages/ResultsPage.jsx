@@ -8,7 +8,7 @@ import {
 } from "@tabler/icons-react";
 import Narrator from "../components/Narrator";
 import { useNarrator } from "../hooks/useNarrator";
-import { generateVisualization, savePlan } from "../utils/api";
+import { generateVisualization, visualizeLand, savePlan } from "../utils/api";
 import { exportToPDF } from "../utils/pdfExport";
 import "./ResultsPage.css";
 
@@ -72,6 +72,13 @@ export default function ResultsPage({ planData, farmData, farmImage, onBack, onR
   const [saveStatus, setSaveStatus] = useState(null); // null | 'saving' | 'saved' | 'error'
   const [pdfGenerating, setPdfGenerating] = useState(false);
 
+  // AI Land Visualization state
+  const [selectedServices, setSelectedServices] = useState([]);
+  const [vizMode, setVizMode] = useState("transform");
+  const [aiImage, setAiImage] = useState(null);
+  const [aiImageLoading, setAiImageLoading] = useState(false);
+  const [aiImageError, setAiImageError] = useState(null);
+
   const { isSpeaking, isSupported, narratePage, stop } = useNarrator(language);
 
   const loadViz = useCallback(async () => {
@@ -84,6 +91,40 @@ export default function ResultsPage({ planData, farmData, farmImage, onBack, onR
   }, [farmData, planData]);
 
   useEffect(() => { if (planData && farmData) loadViz(); }, [planData, farmData, loadViz]);
+
+  const handleGenerateAiImage = useCallback(async () => {
+    if (!farmImage || selectedServices.length === 0) return;
+    setAiImageLoading(true);
+    setAiImageError(null);
+    setAiImage(null);
+    try {
+      // farmImage is a base64 data URL — strip prefix for API
+      const base64 = farmImage.includes(",") ? farmImage.split(",")[1] : farmImage;
+      const res = await visualizeLand(
+        base64,
+        selectedServices,
+        farmData,
+        vizMode,
+        planData.recommendedService || "",
+      );
+      if (res.success) {
+        setAiImage(`data:image/png;base64,${res.generatedImage}`);
+      } else {
+        setAiImageError("Generation failed. Please try again.");
+      }
+    } catch (err) {
+      setAiImageError(err.message || "Something went wrong.");
+    }
+    setAiImageLoading(false);
+  }, [farmImage, selectedServices, farmData, vizMode, planData]);
+
+  // Build service options from plan data
+  const serviceOptions = React.useMemo(() => {
+    const services = new Set();
+    planData.revenueStreams?.forEach(s => { if (s.stream) services.add(s.stream); });
+    planData.uniqueExperiences?.forEach(e => { if (e) services.add(e); });
+    return [...services];
+  }, [planData]);
 
   if (!planData) {
     return (
@@ -282,6 +323,62 @@ export default function ResultsPage({ planData, farmData, farmImage, onBack, onR
         {/* ── VISUALISATION ── */}
         {tab === "visualization" && (
           <div className="results__tab-content anim-fade-up">
+
+            {/* Service Selector */}
+            <div className="rc">
+              <div className="rc__head"><IconSparkles size={16} stroke={2} /><span className="rc__title">Select Services to Visualize</span></div>
+              <div className="rc__body">
+                {!farmImage && (
+                  <div className="results__viz-notice">
+                    <IconAlertTriangle size={16} stroke={2} />
+                    Upload a farm photo in the planner to enable AI visualization.
+                  </div>
+                )}
+                <div className="results__service-chips">
+                  {serviceOptions.map(s => (
+                    <button
+                      key={s}
+                      className={`results__service-chip ${selectedServices.includes(s) ? "results__service-chip--active" : ""}`}
+                      onClick={() => setSelectedServices(prev =>
+                        prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]
+                      )}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+
+                {farmImage && (
+                  <div className="results__viz-controls">
+                    <div className="results__mode-toggle">
+                      <button
+                        className={`results__mode-btn ${vizMode === "transform" ? "results__mode-btn--active" : ""}`}
+                        onClick={() => setVizMode("transform")}
+                      >
+                        <IconBrush size={14} stroke={2} /> Full Transform
+                      </button>
+                      <button
+                        className={`results__mode-btn ${vizMode === "inpaint" ? "results__mode-btn--active" : ""}`}
+                        onClick={() => setVizMode("inpaint")}
+                      >
+                        <IconSparkles size={14} stroke={2} /> Add to Photo
+                      </button>
+                    </div>
+                    <button
+                      className="btn-primary results__generate-btn"
+                      onClick={handleGenerateAiImage}
+                      disabled={aiImageLoading || selectedServices.length === 0}
+                    >
+                      {aiImageLoading
+                        ? <><IconLoader2 size={15} stroke={2} className="spin" /> AI is reimagining your farm...</>
+                        : <><IconEye size={15} stroke={2} /> Visualize My Farm</>}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Before & After Display */}
             <div className="rc">
               <div className="rc__head"><IconEye size={16} stroke={2} /><span className="rc__title">Before &amp; After — Your Farm Transformation</span></div>
               <div className="rc__body" style={{padding:0}}>
@@ -295,11 +392,14 @@ export default function ResultsPage({ planData, farmData, farmImage, onBack, onR
                   )}
                   <div className="results__viz-panel" style={{ gridColumn: farmImage ? "auto" : "1/-1" }}>
                     <span className="results__viz-badge results__viz-badge--after">After</span>
-                    {vizLoading ? (
+                    {aiImageLoading ? (
                       <div className="results__viz-loading">
                         <span className="spinner spinner--dark" />
-                        Generating vision…
+                        <span>AI is transforming your farm...</span>
+                        <span style={{fontSize:11, color:"var(--ink-faint)"}}>This may take 10-15 seconds</span>
                       </div>
+                    ) : aiImage ? (
+                      <img src={aiImage} alt="AI-generated farm transformation" className="results__viz-img" />
                     ) : (
                       <div className="results__farm-illustration">
                         <div className="results__farm-sky" />
@@ -314,12 +414,29 @@ export default function ResultsPage({ planData, farmData, farmImage, onBack, onR
                         <div className="results__farm-tent" />
                       </div>
                     )}
-                    <div className="results__viz-cap">{planData.recommendedService} — Vision</div>
+                    <div className="results__viz-cap">
+                      {aiImage
+                        ? `${planData.recommendedService} — AI Generated`
+                        : `${planData.recommendedService} — Select services above & generate`}
+                    </div>
                   </div>
                 </div>
+                {aiImageError && (
+                  <div className="results__viz-error">
+                    <IconAlertTriangle size={14} stroke={2} /> {aiImageError}
+                  </div>
+                )}
+                {aiImage && (
+                  <div style={{padding:"12px 16px", display:"flex", gap:10}}>
+                    <button className="results__copy-btn" onClick={handleGenerateAiImage} disabled={aiImageLoading}>
+                      <IconRefresh size={14} stroke={2} /> Regenerate
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 
+            {/* Text description cards */}
             {viz && (
               <>
                 <div className="rc">
@@ -341,22 +458,6 @@ export default function ResultsPage({ planData, farmData, farmImage, onBack, onR
                   <div className="rc__body"><p className="results__atmosphere">{viz.atmosphereDescription}</p></div>
                 </div>
               </>
-            )}
-
-            {planData.visualizationPrompt && (
-              <div className="rc">
-                <div className="rc__head"><IconBrush size={16} stroke={2} /><span className="rc__title">Stable Diffusion Prompt</span></div>
-                <div className="rc__body">
-                  <p style={{ fontSize:13, color:"var(--ink-muted)", marginBottom:10 }}>
-                    Use this with Stable Diffusion / Midjourney to generate a realistic image:
-                  </p>
-                  <div className="results__prompt-box">{planData.visualizationPrompt}</div>
-                  <button className="results__copy-btn"
-                    onClick={() => navigator.clipboard.writeText(planData.visualizationPrompt)}>
-                    <IconClipboard size={14} stroke={2} /> Copy Prompt
-                  </button>
-                </div>
-              </div>
             )}
           </div>
         )}

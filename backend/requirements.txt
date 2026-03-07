@@ -21,6 +21,9 @@ sagemaker==2.214.0           # SageMaker training + deployment (Phase 3)
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
 
+# ── Image Processing ─────────────────────────────────────────────────────────
+Pillow>=10.2.0               # image resize/format for Nova Canvas
+
 # ── Utilities ─────────────────────────────────────────────────────────────────
 python-dotenv==1.0.1
 httpx==0.27.0

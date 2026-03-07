@@ -315,3 +315,153 @@ def generate_visualization_description(
     prompt = build_visualization_prompt(farm_data, plan_data)
     raw = invoke_model(prompt, max_tokens=1024)
     return _extract_json(raw)
+
+
+def generate_image_prompt(
+    services: list[str], farm_data: dict, mode: str = "transform",
+    image_bytes: bytes | None = None,
+) -> dict[str, str]:
+    """
+    Use Nova Pro (with the actual farm image) to craft an image generation
+    prompt that preserves the original scene and adds agrotourism services.
+    """
+    services_str = ", ".join(services)
+    location = farm_data.get("location", "rural India")
+    land_size = farm_data.get("landSize", "a few")
+    crops = farm_data.get("biodiversity", "mixed crops")
+    infrastructure = farm_data.get("existingInfrastructure", [])
+    if isinstance(infrastructure, list):
+        infrastructure = ", ".join(infrastructure) if infrastructure else "none"
+
+    if mode == "inpaint":
+        meta_prompt = f"""Look at this farm photo carefully. Describe EXACTLY what you see — the terrain, colors, vegetation, sky, any structures, field layout, and perspective/angle.
+
+The farmer near {location} with {land_size} acres of {crops} wants to add: {services_str}.
+Existing infrastructure: {infrastructure}.
+
+Now generate TWO things:
+1. "maskPrompt": A short phrase identifying the best area in THIS SPECIFIC photo to place the new services (e.g., "the green open field on the left side", "the flat empty ground near the barn"). Reference what you actually see.
+2. "fillPrompt": A description (60-100 words) of what to place in that masked area. CRITICAL — it must blend seamlessly with the rest of THIS photo. Match the same lighting, color temperature, perspective, and season. Describe structures, materials, and vegetation that fit the existing landscape. Indian rural aesthetic.
+
+Return ONLY valid JSON: {{"maskPrompt": "...", "fillPrompt": "..."}}"""
+    else:
+        meta_prompt = f"""Look at this farm photo carefully. Describe EXACTLY what you see in detail — the terrain shape, colors, vegetation types, sky condition, any existing structures, field patterns, fencing, roads, trees, and the camera angle/perspective.
+
+The farmer near {location} with {land_size} acres of {crops} wants to transform this into an agritourism destination featuring: {services_str}.
+Existing infrastructure: {infrastructure}.
+
+Write a SINGLE image generation prompt (100-180 words) that describes THIS EXACT SAME farm scene — same terrain layout, same sky, same perspective, same field shapes, same existing trees and structures — but with the agritourism services tastefully added.
+
+CRITICAL RULES for the prompt:
+- START by describing the existing landscape exactly as it appears (terrain, fields, sky, colors, existing buildings)
+- THEN layer the new agrotourism additions into specific locations within that scene
+- Preserve the original camera angle, lighting conditions, time of day, and weather
+- Keep all existing trees, paths, boundaries, and natural features
+- New structures should be small-scale, realistic for Indian rural context (not resort-scale)
+- Materials: local stone, bamboo, terracotta tiles, thatch, painted wood
+- Add subtle details: small signboard, a few visitors, flower beds along paths, string lights
+- The result should look like a realistic "after" photo of THIS SAME farm, not a fantasy scene
+
+Return ONLY valid JSON: {{"imagePrompt": "..."}}"""
+
+    raw = invoke_model(meta_prompt, image_bytes=image_bytes, max_tokens=512)
+    return _extract_json(raw)
+
+
+def generate_land_visualization(
+    image_base64: str, prompt_data: dict, mode: str = "transform"
+) -> str:
+    """
+    Generate a transformed farm image using Amazon Nova Canvas.
+    Returns base64-encoded result image.
+
+    Uses InvokeModel API (not Converse) — Nova Canvas requires it.
+    """
+    import base64
+    from io import BytesIO
+    from PIL import Image
+
+    client = _bedrock_runtime()
+    model_id = settings.BEDROCK_IMAGE_MODEL_ID
+
+    # Decode and resize image to fit Nova Canvas requirements
+    img_bytes = base64.b64decode(image_base64)
+    img = Image.open(BytesIO(img_bytes))
+
+    # Nova Canvas needs dimensions divisible by 64, max 1408 for conditioning/inpainting
+    # Resize maintaining aspect ratio, fit within 1024x1024
+    max_dim = 1024
+    ratio = min(max_dim / img.width, max_dim / img.height)
+    if ratio < 1:
+        new_w = int(img.width * ratio)
+        new_h = int(img.height * ratio)
+    else:
+        new_w = img.width
+        new_h = img.height
+
+    # Round to nearest multiple of 64
+    new_w = max(64, (new_w // 64) * 64)
+    new_h = max(64, (new_h // 64) * 64)
+
+    img = img.resize((new_w, new_h), Image.Resampling.LANCZOS)
+
+    # Convert to PNG base64 for Nova Canvas
+    buf = BytesIO()
+    img.save(buf, format="PNG")
+    resized_b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
+
+    if mode == "inpaint":
+        body = {
+            "taskType": "INPAINTING",
+            "inPaintingParams": {
+                "image": resized_b64,
+                "maskPrompt": prompt_data.get("maskPrompt", "the empty area"),
+                "text": prompt_data.get("fillPrompt", ""),
+            },
+            "imageGenerationConfig": {
+                "numberOfImages": 1,
+                "quality": "standard",
+                "cfgScale": 8.0,
+                "seed": int.from_bytes(os.urandom(4), "big") % 2147483647,
+            },
+        }
+    else:
+        # IMAGE_CONDITIONING with SEGMENTATION
+        # controlStrength 0.85 = strongly preserve original layout/structure
+        body = {
+            "taskType": "TEXT_IMAGE",
+            "textToImageParams": {
+                "text": prompt_data.get("imagePrompt", ""),
+                "conditionImage": resized_b64,
+                "controlMode": "SEGMENTATION",
+                "controlStrength": 0.85,
+            },
+            "imageGenerationConfig": {
+                "numberOfImages": 1,
+                "width": new_w,
+                "height": new_h,
+                "quality": "standard",
+                "cfgScale": 8.0,
+                "seed": int.from_bytes(os.urandom(4), "big") % 2147483647,
+            },
+        }
+
+    logger.info("Invoking Nova Canvas (%s) — mode=%s, size=%dx%d", model_id, mode, new_w, new_h)
+
+    response = client.invoke_model(
+        modelId=model_id,
+        contentType="application/json",
+        accept="application/json",
+        body=json.dumps(body),
+    )
+
+    result = json.loads(response["body"].read())
+
+    if result.get("error"):
+        raise RuntimeError(f"Nova Canvas error: {result['error']}")
+
+    images = result.get("images", [])
+    if not images:
+        raise RuntimeError("Nova Canvas returned no images")
+
+    return images[0]

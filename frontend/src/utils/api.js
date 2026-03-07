@@ -108,6 +108,21 @@ export async function savePlan(farmData, planData, language = 'hindi') {
   return response.json();
 }
 
+export async function visualizeLand(imageBase64, services, farmData, mode = 'transform', planSummary = '') {
+  const response = await fetch(`${API_BASE}/visualize-land`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ imageBase64, services, farmData, mode, planSummary }),
+  });
+
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(parseErrorMessage(err, 'Land visualization failed'));
+  }
+
+  return response.json();
+}
+
 export async function loadPlan(planId) {
   const response = await fetch(`${API_BASE}/plans/${planId}`);
 
