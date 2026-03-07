@@ -24,7 +24,7 @@ from app.config import get_settings  # noqa: E402
 
 settings = get_settings()
 
-ROLE_ARN        = "arn:aws:iam::YOUR_ACCOUNT_ID:role/chalokisaan-sagemaker-role"
+ROLE_ARN        = settings.SAGEMAKER_ROLE_ARN
 ENDPOINT_NAME   = settings.SAGEMAKER_SDXL_ENDPOINT
 REGION          = settings.AWS_REGION
 

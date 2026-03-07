@@ -13,8 +13,10 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.13);
-  transition: background 0.18s, color 0.18s, transform 0.15s;
+  box-shadow: var(--shadow-md);
+  transition: background var(--dur-fast) var(--ease-out),
+              color var(--dur-fast) var(--ease-out),
+              transform var(--dur-fast) var(--ease-out);
 }
 
 .narrator-btn:hover {
@@ -22,6 +24,8 @@
   color: var(--parchment);
   transform: scale(1.08);
 }
+
+.narrator-btn:active { transform: scale(0.94); }
 
 .narrator-btn--speaking {
   background: var(--forest);

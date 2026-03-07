@@ -56,10 +56,13 @@ from app.api.routes import (  # noqa: E402
     generate_viz,
     tts,
     projects,
+    auth,
+    assistant,
 )
 
 PREFIX = "/api"
 
+app.include_router(auth.router,           prefix=PREFIX, tags=["Authentication"])
 app.include_router(health.router,         prefix=PREFIX, tags=["Health"])
 app.include_router(plans.router,          prefix=PREFIX, tags=["Plan Generation"])
 app.include_router(transcribe.router,     prefix=PREFIX, tags=["Voice / Transcribe"])
@@ -67,3 +70,4 @@ app.include_router(visualizations.router, prefix=PREFIX, tags=["Image Analysis"]
 app.include_router(generate_viz.router,   prefix=PREFIX, tags=["Visualization"])
 app.include_router(tts.router,            prefix=PREFIX, tags=["Text-to-Speech"])
 app.include_router(projects.router,       prefix=PREFIX, tags=["Projects"])
+app.include_router(assistant.router,      prefix=PREFIX, tags=["AI Assistant"])

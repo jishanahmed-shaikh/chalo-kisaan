@@ -19,6 +19,9 @@ build/
 *.swo
 *~
 .DS_Store
+certs/
+*.md
+scripts/
 
 # Build outputs
 /frontend/dist/
@@ -43,8 +46,8 @@ coverage/
 # AWS
 .aws/
 aws-credentials.json
-
 .claude/
 /.claude
+/infra
 
 package-lock.json

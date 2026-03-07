@@ -7,6 +7,7 @@ import {
 import logoPrimary from '../assets/logo-primary.png';
 import Narrator from '../components/Narrator';
 import { useNarrator } from '../hooks/useNarrator';
+import { useLanguage } from '../context/LanguageContext';
 import './LandingPage.css';
 
 const STATS = [
@@ -26,6 +27,7 @@ const FEATURES = [
 
 export default function LandingPage({ onStart, language = 'hindi' }) {
   const { isSpeaking, isSupported, narratePage, stop } = useNarrator(language);
+  const { t } = useLanguage();
 
   return (
     <div className="landing">
@@ -37,11 +39,6 @@ export default function LandingPage({ onStart, language = 'hindi' }) {
         onStop={stop}
       />
 
-      <div className="landing__topstrip">
-        <span>AI for Bharat Hackathon &nbsp;·&nbsp; Powered by AWS</span>
-        <span className="text-devanagari">चलो किसान</span>
-      </div>
-
       <header className="landing__header">
         <div className="landing__logo">
           <img
@@ -51,7 +48,7 @@ export default function LandingPage({ onStart, language = 'hindi' }) {
           />
           <div>
             <div className="landing__logo-name">Chalo Kisaan</div>
-            <div className="landing__logo-tagline text-devanagari">कृषि पर्यटन योजनाकार</div>
+            <div className="landing__logo-tagline">{t('landing_tagline')}</div>
           </div>
         </div>
         <div className="landing__header-rule" />
@@ -59,27 +56,22 @@ export default function LandingPage({ onStart, language = 'hindi' }) {
 
       <section className="landing__hero anim-fade-up">
         <div className="landing__hero-inner">
-          <div className="landing__hero-kicker stamp" style={{ color: 'var(--forest)', borderColor: 'var(--forest)' }}>
+          <div className="landing__hero-kicker stamp" style={{ color: 'var(--g-500)', borderColor: 'var(--g-500)' }}>
             AI-Powered · Free to Use · Voice First
           </div>
           <h1 className="landing__headline">
-            Transform Your Farm<br />
-            <em>Into a Thriving Business</em>
+            {t('landing_tagline')}<br />
+            <em>{t('landing_sub')}</em>
           </h1>
           <p className="landing__subheadline">
-            Get a personalised agritourism plan for your land in minutes —
-            with revenue forecasts, government scheme guidance, and a visual
-            preview of your farm's future.
+            {t('landing_sub')}
           </p>
-          <div className="landing__hero-devanagari">
-            अपने खेत की पूरी क्षमता जानें — हिंदी या मराठी में बोलकर
-          </div>
           <button className="landing__cta btn-primary" onClick={onStart}>
-            Begin Planning Your Farm
+            {t('landing_start')}
             <span className="landing__cta-arrow">→</span>
           </button>
           <p className="landing__cta-note text-muted">
-            Works on mobile &nbsp;·&nbsp; No sign-up needed &nbsp;·&nbsp; Results in 60 seconds
+            Works on mobile &nbsp;·&nbsp; Free to use &nbsp;·&nbsp; Results in 60 seconds
           </p>
         </div>
 
@@ -154,16 +146,15 @@ export default function LandingPage({ onStart, language = 'hindi' }) {
       <section className="landing__cta-strip">
         <div className="landing__cta-strip-inner">
           <div className="landing__cta-strip-text">
-            <span className="text-devanagari">किसानों के लिए, किसानों द्वारा</span>
             <span className="landing__cta-strip-en">Built for India's 8.6 crore marginal farmers</span>
           </div>
-          <button className="btn-primary" onClick={onStart}>Start Free &nbsp;→</button>
+          <button className="btn-primary" onClick={onStart}>{t('landing_start')} &nbsp;→</button>
         </div>
       </section>
 
       <footer className="landing__footer">
         <div className="rule-gold" />
-        <p>Team <strong>grACE</strong> &nbsp;·&nbsp; AI for Bharat Hackathon &nbsp;·&nbsp; Powered by AWS</p>
+        <p>Transforming Indian agriculture through technology &nbsp;·&nbsp; v1.0</p>
       </footer>
     </div>
   );

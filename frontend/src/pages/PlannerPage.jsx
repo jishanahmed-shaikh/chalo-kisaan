@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
   IconArrowLeft, IconArrowRight, IconPlant2, IconMicrophone,
   IconCamera, IconSearch, IconRuler, IconMapPin, IconDroplets,
@@ -11,7 +11,8 @@ import VoiceInput from "../components/VoiceInput";
 import FieldMic from "../components/FieldMic";
 import Narrator from "../components/Narrator";
 import { useNarrator } from "../hooks/useNarrator";
-import { generatePlanStream, analyzeImage, createReport } from "../utils/api";
+import { generatePlanStream, analyzeImage } from "../utils/api";
+import { useAuth } from "../context/AuthContext";
 import "./PlannerPage.css";
 
 const SOIL_TYPES    = ["Red Soil","Black Cotton Soil","Alluvial Soil","Laterite Soil","Sandy Soil","Clay Soil"];
@@ -21,31 +22,8 @@ const BIODIVERSITY  = ["Mango Orchard","Sugarcane","Paddy / Rice","Wheat","Grape
 const LANGUAGES     = [{ key:"english", label:"EN" },{ key:"hindi", label:"हि" },{ key:"marathi", label:"म" },{ key:"punjabi", label:"ਪੰ" },{ key:"gujarati", label:"ગુ" }];
 const STEPS         = ["Farm Basics", "Resources & Budget", "Review & Generate"];
 
-/**
- * Convert a blob URL to a base64 data URL.
- */
-function blobUrlToBase64(blobUrl) {
-  return new Promise((resolve) => {
-    if (!blobUrl || !blobUrl.startsWith('blob:')) {
-      resolve(blobUrl || null);
-      return;
-    }
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      const maxW = 800;
-      const scale = Math.min(1, maxW / img.width);
-      canvas.width = img.width * scale;
-      canvas.height = img.height * scale;
-      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-      resolve(canvas.toDataURL('image/jpeg', 0.7));
-    };
-    img.onerror = () => resolve(null);
-    img.src = blobUrl;
-  });
-}
-
 export default function PlannerPage({ onBack, onComplete, onLanguageChange, language }) {
+  const { authHeader } = useAuth();
   const [form, setForm] = useState({
     landSize:"", location:"", soilType:"", waterSource:"",
     existingInfrastructure:[], budget:"", biodiversity:"", language: language || "hindi",
@@ -60,6 +38,15 @@ export default function PlannerPage({ onBack, onComplete, onLanguageChange, lang
   const [error,          setError]          = useState(null);
   const [step,           setStep]           = useState(1);
   const fileRef = useRef(null);
+  const rawTextRef = useRef("");  // accumulates full stream text without stale closure
+  const streamBoxRef = useRef(null); // for auto-scrolling the stream box
+
+  // Auto-scroll stream box to bottom as new text comes in
+  useEffect(() => {
+    if (streamBoxRef.current) {
+      streamBoxRef.current.scrollTop = streamBoxRef.current.scrollHeight;
+    }
+  }, [streamText]);
 
   const narratorKey = `planner_step${step}`;
   const { isSpeaking, isSupported, narratePage, stop } = useNarrator(form.language);
@@ -122,39 +109,57 @@ export default function PlannerPage({ onBack, onComplete, onLanguageChange, lang
     setError(null);
     setIsGenerating(true);
     setStreamText("");
+    rawTextRef.current = "";
     let result = null;
+
     await generatePlanStream(
       form,
-      (d) => setStreamText(p => p + d),
+      (d) => {
+        // Live typing: accumulate into ref (no stale closure) AND update display state
+        rawTextRef.current += d;
+        setStreamText(rawTextRef.current);
+      },
       (d) => { result = d; },
-      (e) => { setError(e.message); setIsGenerating(false); }
+      (e) => { setError(e.message); setIsGenerating(false); },
+      (_rawText) => {
+        // Server-side parse failed — try once more on the client with aggressive extraction
+        try {
+          const stripped = _rawText.replace(/^```[a-z]*\s*\n?/m, '').replace(/\s*```\s*$/m, '').trim();
+          const first = stripped.indexOf('{');
+          const last  = stripped.lastIndexOf('}');
+          if (first !== -1 && last > first) {
+            result = JSON.parse(stripped.slice(first, last + 1));
+          }
+        } catch { /* will show retry error below */ }
+      },
+      authHeader()
     );
+
     setIsGenerating(false);
 
-    if (!result && streamText) {
-      try {
-        const m = streamText.match(/\{[\s\S]*\}/);
-        if (m) result = JSON.parse(m[0]);
-      } catch {}
+    if (result) {
+      onComplete(result, form, imagePreview);
+      return;
     }
 
-    if (result) {
-      // Auto-save to S3
-      setIsSaving(true);
+    // Final client-side parse attempt on the accumulated stream text
+    if (rawTextRef.current) {
       try {
-        const imageBase64 = await blobUrlToBase64(imagePreview);
-        const res = await createReport(form, result, form.language, imageBase64);
-        if (res.success && res.reportId) {
-          // Pass presigned URL will be fetched by ResultsPage; for same-session, pass base64
-          onComplete(res.reportId, result, form, imageBase64);
-        } else {
-          setError("Plan generated but failed to save. Please try again.");
+        const stripped = rawTextRef.current.replace(/^```[a-z]*\s*\n?/m, '').replace(/\s*```\s*$/m, '').trim();
+        const first = stripped.indexOf('{');
+        const last  = stripped.lastIndexOf('}');
+        if (first !== -1 && last > first) {
+          const parsed = JSON.parse(stripped.slice(first, last + 1));
+          if (parsed && typeof parsed === 'object') {
+            onComplete(parsed, form, imagePreview);
+            return;
+          }
         }
-      } catch (err) {
-        setError(`Plan generated but save failed: ${err.message}`);
-      }
-      setIsSaving(false);
+      } catch { /* fall through */ }
     }
+
+    // Nothing worked — ask the farmer to try again (never show raw JSON)
+    setError("Could not generate your plan. Please tap 'Generate My Plan' again.");
   };
 
   const REVIEW_ROWS = [
@@ -278,21 +283,30 @@ export default function PlannerPage({ onBack, onComplete, onLanguageChange, lang
               )}
 
               {imageAnalysis && (
-                <div className="planner__analysis">
+                <div className={`planner__analysis${imageAnalysis.agritourismPotential === 'not_farm' ? ' planner__analysis--warning' : ''}`}>
                   <div className="planner__analysis-header">
                     <IconSearch size={14} stroke={2} /> AI Land Analysis
-                    <span className={`planner__potential planner__potential--${imageAnalysis.agritourismPotential}`}>
-                      {imageAnalysis.agritourismPotential} potential
-                    </span>
+                    {imageAnalysis.agritourismPotential !== 'not_farm' && (
+                      <span className={`planner__potential planner__potential--${imageAnalysis.agritourismPotential}`}>
+                        {imageAnalysis.agritourismPotential} potential
+                      </span>
+                    )}
+                    {imageAnalysis.agritourismPotential === 'not_farm' && (
+                      <span className="planner__potential planner__potential--not-farm">
+                        Not a farm image
+                      </span>
+                    )}
                   </div>
                   <p className="planner__analysis-text">{imageAnalysis.visualObservations}</p>
-                  <div className="planner__analysis-tags">
-                    {imageAnalysis.potentialServices?.map((s, i) => (
-                      <span key={i} className="planner__analysis-tag">
-                        <IconCheck size={11} stroke={3} /> {s}
-                      </span>
-                    ))}
-                  </div>
+                  {imageAnalysis.agritourismPotential !== 'not_farm' && (
+                    <div className="planner__analysis-tags">
+                      {imageAnalysis.potentialServices?.map((s, i) => (
+                        <span key={i} className="planner__analysis-tag">
+                          <IconCheck size={11} stroke={3} /> {s}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -458,9 +472,11 @@ export default function PlannerPage({ onBack, onComplete, onLanguageChange, lang
                     ? "Saving your report..."
                     : "AI is crafting your personalised agritourism plan\u2026"}
                 </div>
-                {streamText && !isSaving && (
-                  <div className="planner__stream-box">
-                    {streamText.slice(-280)}
+                {streamText && (
+                  <div className="planner__stream-box" ref={streamBoxRef}>
+                    <span className="planner__stream-text">
+                      {streamText.replace(/^```[a-z]*\s*\n?/, '')}
+                    </span>
                     <span className="planner__stream-cursor">▌</span>
                   </div>
                 )}

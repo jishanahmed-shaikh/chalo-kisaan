@@ -11,7 +11,9 @@
   justify-content: center;
   cursor: pointer;
   position: relative;
-  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  transition: border-color var(--dur-fast) var(--ease-out),
+              color var(--dur-fast) var(--ease-out),
+              background var(--dur-fast) var(--ease-out);
 }
 
 .field-mic:hover:not(:disabled) {
@@ -19,6 +21,8 @@
   color: var(--forest);
   background: var(--paper-fold);
 }
+
+.field-mic:active:not(:disabled) { transform: scale(0.92); }
 
 .field-mic--active {
   border-color: var(--terracotta);

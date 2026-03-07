@@ -1,0 +1,48 @@
+name: Deploy Frontend → AWS Amplify
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/deploy-frontend.yml'
+
+jobs:
+  build-and-deploy:
+    name: Build React app & trigger Amplify
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build production bundle
+        working-directory: frontend
+        run: npm run build
+        env:
+          # Empty = relative /api URLs — Amplify rewrites /api/* → ALB
+          REACT_APP_API_URL: ""
+          REACT_APP_DEV_BYPASS_AUTH: "false"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region:            ap-south-1
+
+      - name: Trigger Amplify deployment
+        run: |
+          aws amplify start-job \
+            --app-id ${{ secrets.AMPLIFY_APP_ID }} \
+            --branch-name master \
+            --job-type RELEASE

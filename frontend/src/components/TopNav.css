@@ -1,0 +1,108 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   TopNav.css — Desktop horizontal navbar + mobile hamburger fallback
+   HIDDEN on mobile (< 768px), shown on desktop (≥ 768px).
+   BottomNav handles mobile navigation instead.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.top-nav {
+  display: none; /* hidden on mobile — BottomNav is used instead */
+}
+
+/* ── Show on desktop ─────────────────────────────────────────────────────── */
+@media (min-width: 768px) {
+  .top-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    padding: 0 var(--sp-8);
+    background: rgba(255,255,255,0.92);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 200;
+    box-shadow: var(--shadow-sm);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    width: 100%;
+  }
+
+  /* Brand */
+  .top-nav__brand {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    cursor: pointer;
+    text-decoration: none;
+    user-select: none;
+  }
+
+  .top-nav__logo {
+    height: 32px;
+    width: auto;
+  }
+
+  .top-nav__brand-name {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--g-700);
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+  }
+
+  /* Nav links */
+  .top-nav__links {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-1);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .top-nav__link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 38px;
+    padding: 0 var(--sp-4);
+    border-radius: var(--r-full);
+    border: none;
+    background: none;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink-3);
+    cursor: pointer;
+    transition: background var(--dur-fast) var(--ease-out),
+                color var(--dur-fast) var(--ease-out);
+    white-space: nowrap;
+    font-family: var(--font-body);
+    position: relative;
+  }
+
+  .top-nav__link:hover {
+    background: var(--g-50);
+    color: var(--g-700);
+  }
+
+  .top-nav__link:active {
+    transform: scale(0.97);
+  }
+
+  .top-nav__link--active {
+    background: var(--g-100);
+    color: var(--g-700);
+    font-weight: 700;
+  }
+
+  /* Hide hamburger on desktop */
+  .top-nav__hamburger { display: none; }
+  .top-nav__mobile-menu { display: none; }
+}
+
+/* ── Mobile hamburger styles (< 768px) — TopNav briefly visible for drawer ── */
+@media (max-width: 767px) {
+  .top-nav {
+    display: none; /* completely hidden on mobile — BottomNav covers it */
+  }
+}

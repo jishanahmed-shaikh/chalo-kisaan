@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Tiro+Devanagari+Hindi:ital@0;1&family=Literata:ital,opsz,wght@0,7..72,300;0,7..72,400;0,7..72,600;0,7..72,700;1,7..72,400&family=Noto+Sans+Devanagari:wght@400;500;600&display=swap');
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -5,40 +7,103 @@
 }
 
 :root {
-  /* Paper & Ink Palette — Indian printed matter */
-  --paper:        #fdf6e3;
-  --paper-dark:   #f5ead0;
-  --paper-fold:   #ecdfc0;
-  --ink:          #1c1208;
-  --ink-light:    #3d2f1a;
-  --ink-muted:    #6b5a3e;
-  --ink-faint:    #a8936a;
+  /* ── Green Scale — deep natural forest green ── */
+  --g-50:   #F0F7F0;
+  --g-100:  #D6EDD6;
+  --g-200:  #AEDAAE;
+  --g-300:  #7DC07D;
+  --g-400:  #52A652;
+  --g-500:  #3A8C3A;
+  --g-600:  #2D7132;
+  --g-700:  #245928;
+  --g-800:  #1C441F;
+  --g-900:  #143018;
+  --g-950:  #0A1E0C;
 
-  /* Accent — saffron, terracotta, forest */
-  --saffron:      #e07b00;
-  --saffron-light:#f5a623;
-  --terracotta:   #b04a2a;
-  --forest:       #2e5c2e;
-  --forest-light: #4a8c3f;
-  --gold-rule:    #c8a84b;
+  /* ── Semantic aliases ── */
+  --green:          var(--g-500);
+  --green-dark:     var(--g-700);
+  --green-darker:   var(--g-900);
+  --green-surface:  var(--g-50);
+  --green-subtle:   var(--g-100);
 
-  /* Functional */
-  --border:       #d4bc8a;
-  --border-dark:  #b09060;
-  --shadow:       rgba(60, 40, 10, 0.12);
-  --shadow-deep:  rgba(60, 40, 10, 0.22);
+  /* ── Neutral / Paper ── */
+  --bg:           #F5F7F5;
+  --surface:      #FFFFFF;
+  --surface-2:    #F8FBF8;
+  --border:       #E2EBE2;
+  --border-dark:  #C8D9C8;
 
-  /* Fonts */
+  /* ── Ink ── */
+  --ink:          #0D1A0D;
+  --ink-2:        #2D3D2D;
+  --ink-3:        #5A6E5A;
+  --ink-4:        #8FA08F;
+
+  /* ── Accent ── */
+  --saffron:      #E07B00;
+  --saffron-bg:   #FFF4E5;
+  --terracotta:   #B04A2A;
+  --terracotta-bg:#FDF0EC;
+  --gold:         #C8A84B;
+
+  /* Legacy aliases for backward compat */
+  --paper:        var(--bg);
+  --paper-dark:   #EDF3ED;
+  --paper-fold:   #DDE8DD;
+  --ink-light:    var(--ink-2);
+  --ink-muted:    var(--ink-3);
+  --ink-faint:    var(--ink-4);
+  --forest:       var(--g-700);
+  --forest-light: var(--g-600);
+  --gold-rule:    var(--gold);
+  --shadow:       rgba(0, 40, 0, 0.08);
+  --shadow-deep:  rgba(0, 40, 0, 0.16);
+
+  /* ── Typography ── */
+  --font-sans:       'Inter', system-ui, -apple-system, sans-serif;
   --font-serif:      'Literata', Georgia, serif;
-  --font-display:    'Tiro Devanagari Hindi', 'Literata', serif;
+  --font-display:    'Inter', 'Tiro Devanagari Hindi', sans-serif;
   --font-devanagari: 'Noto Sans Devanagari', serif;
-  --font-body:       'Literata', Georgia, serif;
+  --font-body:       'Inter', system-ui, sans-serif;
 
-  /* Spacing tokens */
-  --r-sm:  6px;
-  --r-md:  10px;
-  --r-lg:  16px;
-  --r-xl:  24px;
+  /* ── Radius — slightly more rounded for friendly feel ── */
+  --r-xs:  6px;
+  --r-sm:  10px;
+  --r-md:  14px;
+  --r-lg:  20px;
+  --r-xl:  28px;
+  --r-full: 9999px;
+
+  /* ── Spacing scale (consistent 4px grid) ── */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+
+  /* ── Shadows — layered for depth consistency ── */
+  --shadow-xs: 0 1px 2px rgba(0,40,0,0.04);
+  --shadow-sm: 0 2px 8px rgba(0,40,0,0.06);
+  --shadow-md: 0 4px 16px rgba(0,40,0,0.08);
+  --shadow-lg: 0 8px 32px rgba(0,40,0,0.10);
+  --shadow-xl: 0 16px 48px rgba(0,40,0,0.12);
+
+  /* ── Transitions — unified timing ── */
+  --ease-out:    cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-fast:    0.15s;
+  --dur-base:    0.2s;
+  --dur-slow:    0.35s;
+
+  /* ── Layout ── */
+  --nav-h:      64px;       /* bottom nav height mobile */
+  --max-mobile: 430px;      /* max phone width */
+  --max-app:    1200px;     /* max desktop width */
+  --page-px:    16px;       /* consistent horizontal page padding */
 }
 
 html {
@@ -49,37 +114,23 @@ html {
 
 body {
   font-family: var(--font-body);
-  background-color: var(--paper);
+  background-color: var(--bg);
   color: var(--ink);
   min-height: 100vh;
-  line-height: 1.65;
-  font-size: 16px;
-  /* Subtle paper texture via CSS */
-  background-image:
-    repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 28px,
-      rgba(180,150,90,0.04) 28px,
-      rgba(180,150,90,0.04) 29px
-    );
+  line-height: 1.6;
+  font-size: 15px;
+  /* Prevent horizontal overflow on mobile */
+  overflow-x: hidden;
 }
 
-/* Paper texture overlay on root */
-#root::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 9999;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
-  opacity: 1;
-}
+/* Remove paper texture overlay — new design is clean / flat */
+#root::before { display: none; }
 
-/* ─── Scrollbar ─── */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--paper-dark); }
-::-webkit-scrollbar-thumb { background: var(--border-dark); border-radius: 3px; }
+/* ─── Scrollbar — thin and subtle ─── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-dark); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--ink-4); }
 
 /* ─── Selection ─── */
 ::selection { background: rgba(224, 123, 0, 0.2); color: var(--ink); }
@@ -197,6 +248,7 @@ input, select, textarea {
   font-family: var(--font-body);
   transition: border-color 0.15s, box-shadow 0.15s;
   -webkit-appearance: none;
+  appearance: none;
 }
 
 .field-input:focus {

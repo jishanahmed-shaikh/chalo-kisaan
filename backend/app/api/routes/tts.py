@@ -1,6 +1,6 @@
 """
-Route: POST /api/tts — Polly text-to-speech
-Returns a pre-signed S3 URL to an MP3.
+Route: POST /api/tts — Amazon Polly Text-to-Speech
+Returns a pre-signed S3 URL to an MP3 synthesized with Polly Neural voices.
 """
 
 from __future__ import annotations

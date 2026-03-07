@@ -13,8 +13,8 @@ psycopg2-binary==2.9.9
 alembic==1.13.1
 
 # ── AWS SDK ───────────────────────────────────────────────────────────────────
-boto3>=1.35.0                # core SDK: Bedrock Converse API, S3, Transcribe, Polly
-botocore>=1.35.0             # requires 1.35+ for Converse/ConverseStream + API key auth
+boto3>=1.35.0                # core SDK: Bedrock, S3, Polly, Transcribe
+botocore>=1.35.0             # requires 1.35+ for API key auth
 sagemaker==2.214.0           # SageMaker training + deployment (Phase 3)
 
 # ── Auth ──────────────────────────────────────────────────────────────────────

@@ -1,0 +1,117 @@
+/* ── Bottom Navigation Bar — Floating Pill ───────────────────────────────── */
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: stretch;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(226,235,226,0.6);
+  height: var(--nav-h, 64px);
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  box-shadow: 0 -2px 24px rgba(0,40,0,0.06);
+}
+
+/* Desktop: hide — TopNav takes over */
+@media (min-width: 768px) {
+  .bottom-nav {
+    display: none;
+  }
+}
+
+/* ── Tab item ─────────────────────────────────────────────────────────────── */
+.bottom-nav__item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 4px;
+  color: var(--ink-4, #8FA08F);
+  transition: color var(--dur-fast) ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.bottom-nav__item--active {
+  color: var(--g-600, #2D7132);
+}
+
+.bottom-nav__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  transition: background var(--dur-fast) ease, transform var(--dur-fast) ease;
+}
+
+.bottom-nav__item--active .bottom-nav__icon {
+  background: var(--g-50, #F1FDF0);
+  transform: scale(1.05);
+}
+
+.bottom-nav__label {
+  font-size: 10px;
+  font-weight: 500;
+  font-family: var(--font-body);
+  line-height: 1;
+  letter-spacing: 0.01em;
+}
+
+.bottom-nav__item--active .bottom-nav__label {
+  font-weight: 700;
+}
+
+/* ── Hero mic tab (centre) ───────────────────────────────────────────────── */
+.bottom-nav__item--hero {
+  flex: 0 0 64px;
+  padding: 0;
+  position: relative;
+  margin-top: -16px;
+  color: #fff;
+}
+
+.bottom-nav__item--hero .bottom-nav__icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--g-500);
+  box-shadow: 0 4px 18px rgba(41,198,33,0.30);
+  transition: background var(--dur-fast) ease, box-shadow var(--dur-fast) ease, transform 0.1s ease;
+}
+
+.bottom-nav__item--hero:hover .bottom-nav__icon,
+.bottom-nav__item--hero:active .bottom-nav__icon {
+  background: var(--g-600);
+  transform: scale(1.08);
+}
+
+.bottom-nav__item--hero.bottom-nav__item--active .bottom-nav__icon {
+  background: var(--g-700);
+  box-shadow: 0 4px 22px rgba(26,128,21,0.45);
+}
+
+.bottom-nav__item--hero .bottom-nav__label {
+  display: none;
+}
+
+/* ── Hero listening state (mic is active on assistant page) ─────────────── */
+@keyframes hero-pulse {
+  0%, 100% { box-shadow: 0 4px 18px rgba(41,198,33,0.30); }
+  50%       { box-shadow: 0 4px 28px rgba(41,198,33,0.70), 0 0 0 8px rgba(41,198,33,0.12); }
+}
+
+.bottom-nav__item--hero-listening .bottom-nav__icon {
+  background: var(--g-600);
+  animation: hero-pulse 1.2s ease-in-out infinite;
+}

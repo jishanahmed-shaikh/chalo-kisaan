@@ -1,10 +1,10 @@
 /* ════════════════════════════════════════════
-   LANDING PAGE — Traditional Indian Paper UI
+   LANDING PAGE — Premium SaaS Experience
    ════════════════════════════════════════════ */
 
 .landing {
   min-height: 100vh;
-  background: var(--paper);
+  background: linear-gradient(180deg, #fafaf8 0%, #f5f3f0 50%, #e8f5e2 100%);
   display: flex;
   flex-direction: column;
 }
@@ -30,10 +30,11 @@
 
 /* ── Header ── */
 .landing__header {
-  padding: 24px 32px 0;
+  padding: var(--sp-6) var(--sp-8) 0;
   max-width: 1100px;
   margin: 0 auto;
   width: 100%;
+  animation: fadeUp 0.6s var(--ease-out) 0.1s both;
 }
 
 .landing__logo {
@@ -61,6 +62,7 @@
   font-size: 14px;
   color: var(--ink-muted);
   margin-top: 1px;
+  font-weight: 500;
 }
 
 .landing__header-rule {
@@ -85,10 +87,10 @@
   max-width: 1100px;
   margin: 0 auto;
   width: 100%;
-  padding: 48px 32px 40px;
+  padding: var(--sp-10) var(--sp-8) var(--sp-10);
   display: grid;
   grid-template-columns: 1fr 380px;
-  gap: 48px;
+  gap: var(--sp-10);
   align-items: start;
 }
 
@@ -109,11 +111,12 @@
   line-height: 1.15;
   margin-bottom: 18px;
   font-family: var(--font-serif);
+  animation: slideUp 0.6s var(--ease-out) 0.15s both;
 }
 
 .landing__headline em {
   font-style: italic;
-  color: var(--forest);
+  color: var(--g-500);
 }
 
 .landing__subheadline {
@@ -163,15 +166,16 @@
   border: 1.5px solid var(--border);
   border-radius: var(--r-lg);
   overflow: hidden;
-  box-shadow: 4px 6px 24px var(--shadow-deep);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.08);
   position: sticky;
-  top: 24px;
+  top: var(--sp-6);
+  animation: slideInRight 0.6s var(--ease-out) 0.2s both;
 }
 
 .landing__panel-header {
   background: var(--paper-dark);
   border-bottom: 1px solid var(--border);
-  padding: 10px 16px;
+  padding: var(--sp-3) var(--sp-4);
   display: flex;
   align-items: center;
   gap: 6px;
@@ -197,7 +201,7 @@
   margin-left: 4px;
 }
 
-.landing__panel-body { padding: 20px; }
+.landing__panel-body { padding: var(--sp-5); }
 
 .landing__panel-service {
   font-family: var(--font-serif);
@@ -235,7 +239,7 @@
 .landing__panel-key { color: var(--ink-muted); }
 .landing__panel-val {
   font-weight: 700;
-  color: var(--forest);
+  color: var(--g-500);
   font-family: var(--font-serif);
   font-size: 15px;
 }
@@ -265,7 +269,7 @@
 }
 
 .landing__panel-tick {
-  color: var(--forest);
+  color: var(--g-500);
   font-weight: 700;
   font-size: 14px;
   flex-shrink: 0;
@@ -273,10 +277,11 @@
 
 /* ── Stats ── */
 .landing__stats {
-  padding: 0 32px;
+  padding: 0 var(--sp-8);
   max-width: 1100px;
   margin: 0 auto;
   width: 100%;
+  animation: fadeUp 0.6s var(--ease-out) 0.3s both;
 }
 
 .landing__stats-rule { margin: 0; }
@@ -313,17 +318,18 @@
   max-width: 1100px;
   margin: 0 auto;
   width: 100%;
-  padding: 48px 32px;
+  padding: var(--sp-10) var(--sp-8);
+  animation: fadeUp 0.6s var(--ease-out) 0.35s both;
 }
 
 .landing__features-title {
   font-size: 26px;
   font-weight: 700;
   color: var(--ink);
-  margin-bottom: 28px;
+  margin-bottom: var(--sp-7);
   font-family: var(--font-serif);
   position: relative;
-  padding-bottom: 14px;
+  padding-bottom: var(--sp-4);
 }
 
 .landing__features-title::after {
@@ -342,14 +348,14 @@
   border-radius: var(--r-lg);
   overflow: hidden;
   background: var(--border);
-  box-shadow: 0 2px 12px var(--shadow);
+  box-shadow: var(--shadow-sm);
 }
 
 .landing__feature {
   background: var(--paper);
-  padding: 22px 20px;
-  animation: fadeUp 0.4s ease both;
-  transition: background 0.15s;
+  padding: var(--sp-6) var(--sp-5);
+  animation: fadeUp 0.4s var(--ease-out) both;
+  transition: background var(--dur-fast) var(--ease-out);
 }
 
 .landing__feature:hover { background: var(--paper-dark); }
@@ -366,9 +372,11 @@
 
 /* ── CTA Strip ── */
 .landing__cta-strip {
-  background: var(--forest);
-  padding: 28px 32px;
-  margin-top: 8px;
+  background: linear-gradient(135deg, var(--g-500) 0%, var(--g-600) 100%);
+  padding: var(--sp-7) var(--sp-8);
+  margin-top: var(--sp-2);
+  box-shadow: 0 8px 24px rgba(41,198,33,0.2);
+  animation: fadeUp 0.6s var(--ease-out) 0.4s both;
 }
 
 .landing__cta-strip-inner {
@@ -377,7 +385,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
+  gap: var(--sp-6);
   flex-wrap: wrap;
 }
 
@@ -395,22 +403,26 @@
 
 .landing__cta-strip-en {
   font-size: 14px;
-  color: rgba(255,255,255,0.65);
+  color: rgba(255,255,255,0.9);
+  font-weight: 500;
 }
 
 .landing__cta-strip .btn-primary {
-  background: var(--saffron);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  background: #fff;
+  color: var(--g-500);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   white-space: nowrap;
+  font-weight: 700;
 }
 
 .landing__cta-strip .btn-primary:hover {
-  background: #c96e00;
+  background: var(--g-50);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.2);
 }
 
 /* ── Footer ── */
 .landing__footer {
-  padding: 20px 32px;
+  padding: var(--sp-5) var(--sp-8);
   max-width: 1100px;
   margin: 0 auto;
   width: 100%;
@@ -420,29 +432,45 @@
   text-align: center;
   font-size: 13px;
   color: var(--ink-faint);
-  margin-top: 14px;
+  margin-top: var(--sp-4);
 }
 
 /* ── Responsive ── */
 @media (max-width: 860px) {
   .landing__hero {
     grid-template-columns: 1fr;
-    padding: 32px 20px;
+    padding: var(--sp-8) var(--sp-5);
   }
   .landing__hero-panel { display: none; }
   .landing__features-grid { grid-template-columns: repeat(2, 1fr); }
   .landing__stats-grid { grid-template-columns: 1fr; }
-  .landing__stat { border-right: none; border-bottom: 1px solid var(--border); padding: 18px 20px; }
+  .landing__stat { border-right: none; border-bottom: 1px solid var(--border); padding: var(--sp-5) var(--sp-5); }
   .landing__stat:last-child { border-bottom: none; }
 }
 
 @media (max-width: 540px) {
-  .landing__topstrip { padding: 6px 16px; font-size: 10px; }
-  .landing__header { padding: 16px 16px 0; }
-  .landing__hero { padding: 24px 16px; }
-  .landing__features { padding: 32px 16px; }
+  .landing__topstrip { padding: 6px var(--page-px, 16px); font-size: 10px; }
+  .landing__header { padding: var(--sp-4) var(--page-px, 16px) 0; }
+  .landing__hero { padding: var(--sp-6) var(--page-px, 16px); }
+  .landing__features { padding: var(--sp-8) var(--page-px, 16px); }
   .landing__features-grid { grid-template-columns: 1fr; }
-  .landing__stats { padding: 0 16px; }
-  .landing__cta-strip { padding: 20px 16px; }
-  .landing__footer { padding: 16px; }
+  .landing__stats { padding: 0 var(--page-px, 16px); }
+  .landing__cta-strip { padding: var(--sp-5) var(--page-px, 16px); }
+  .landing__footer { padding: var(--sp-4); }
+}
+
+/* ── Animations ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
 }

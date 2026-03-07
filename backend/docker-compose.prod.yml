@@ -1,0 +1,61 @@
+# Production Docker Compose — for LOCAL production-mode testing only.
+# On AWS, use ECS task definitions (see infra/ecs-task-definition.json).
+#
+# Usage:
+#   cp .env.example .env   # fill in real values
+#   docker compose -f docker-compose.prod.yml up --build
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    container_name: chalokisaan-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      # All secrets injected via environment — never baked into image
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION}
+      - AWS_BEARER_TOKEN_BEDROCK=${AWS_BEARER_TOKEN_BEDROCK}
+      - BEDROCK_REGION=${BEDROCK_REGION}
+      - COGNITO_USER_POOL_ID=${COGNITO_USER_POOL_ID}
+      - COGNITO_APP_CLIENT_ID=${COGNITO_APP_CLIENT_ID}
+      - COGNITO_CLIENT_SECRET=${COGNITO_CLIENT_SECRET}
+      - COGNITO_REGION=${COGNITO_REGION}
+      - CORS_ORIGINS=${CORS_ORIGINS}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - DEV_BYPASS_AUTH=false
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: chalokisaan-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER:     ${POSTGRES_USER:-kisaan_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ck2026}
+      POSTGRES_DB:       ${POSTGRES_DB:-chalo_kisaan}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-kisaan_admin} -d ${POSTGRES_DB:-chalo_kisaan}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:

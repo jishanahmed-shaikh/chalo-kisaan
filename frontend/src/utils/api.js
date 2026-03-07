@@ -7,11 +7,12 @@ function parseErrorMessage(errBody, fallback) {
   return errBody?.detail || errBody?.error || errBody?.message || fallback;
 }
 
-export async function generatePlanStream(formData, onDelta, onComplete, onError) {
+export async function generatePlanStream(formData, onDelta, onComplete, onError, onRaw, extraHeaders = {}) {
   try {
+    // Backend /api/generate-plan accepts a flat FarmDataIn body
     const response = await fetch(`${API_BASE}/generate-plan`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...extraHeaders },
       body: JSON.stringify(formData),
     });
 
@@ -22,21 +23,39 @@ export async function generatePlanStream(formData, onDelta, onComplete, onError)
 
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
+    // Buffer incomplete SSE lines across TCP chunk boundaries
+    let buffer = '';
 
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
 
-      const chunk = decoder.decode(value);
-      const lines = chunk.split('\n').filter(l => l.startsWith('data: '));
+      buffer += decoder.decode(value, { stream: true });
 
-      for (const line of lines) {
+      // SSE events are separated by double newlines — only process complete events
+      const events = buffer.split('\n\n');
+      // Last element is either empty or an incomplete event — keep it in the buffer
+      buffer = events.pop() ?? '';
+
+      for (const event of events) {
+        // An SSE event can span multiple "data:" lines — join them
+        const dataLine = event
+          .split('\n')
+          .filter(l => l.startsWith('data: '))
+          .map(l => l.slice(6))
+          .join('');   // multi-line data fields are concatenated per SSE spec
+
+        if (!dataLine) continue;
+
         try {
-          const payload = JSON.parse(line.slice(6));
-          if (payload.type === 'delta') onDelta?.(payload.text);
+          const payload = JSON.parse(dataLine);
+          if (payload.type === 'delta')    onDelta?.(payload.text);
           if (payload.type === 'complete') onComplete?.(payload.data);
-          if (payload.type === 'error') onError?.(new Error(payload.message));
-        } catch {}
+          if (payload.type === 'raw')      onRaw?.(payload.text);
+          if (payload.type === 'error')    onError?.(new Error(payload.message));
+        } catch {
+          // Ignore unparseable frames
+        }
       }
     }
   } catch (err) {
@@ -175,4 +194,161 @@ export async function loadPlan(planId) {
   }
 
   return response.json();
+}
+
+export async function fetchSavedPlans(extraHeaders = {}) {
+  const response = await fetch(`${API_BASE}/plans`, {
+    headers: { ...extraHeaders },
+  });
+
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(parseErrorMessage(err, 'Failed to fetch plans'));
+  }
+
+  return response.json(); // { success, plans: [...] }
+}
+
+export async function deleteSavedPlan(planId, extraHeaders = {}) {
+  const response = await fetch(`${API_BASE}/plans/${planId}`, {
+    method: 'DELETE',
+    headers: { ...extraHeaders },
+  });
+
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(parseErrorMessage(err, 'Failed to delete plan'));
+  }
+
+  return response.json();
+}
+
+// ── Auth API ────────────────────────────────────────────────────────────────
+
+export const authApi = {
+  /** Sign up — create account with phone + password + profile. Returns { success, message } */
+  async register(phone, password, profile = {}) {
+    const res = await fetch(`${API_BASE}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        phone,
+        password,
+        given_name:  profile.given_name  || '',
+        family_name: profile.family_name || '',
+        birthdate:   profile.birthdate   || '',
+        address:     profile.address     || '',
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(parseErrorMessage(data, 'Could not create account'));
+    return data;
+  },
+
+  /** Log in with phone + password. Returns { id_token, access_token, refresh_token, expires_in, phone } */
+  async login(phone, password) {
+    const res = await fetch(`${API_BASE}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(parseErrorMessage(data, 'Login failed'));
+    return data;
+  },
+
+  /** Silent refresh — returns { id_token, access_token, expires_in } */
+  async refresh(phone, refreshToken) {
+    const res = await fetch(`${API_BASE}/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone, refresh_token: refreshToken }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(parseErrorMessage(data, 'Session expired'));
+    return data;
+  },
+
+  /** Fetch the authenticated user's full profile from Cognito */
+  async getProfile(authHeaders) {
+    const res = await fetch(`${API_BASE}/auth/me`, {
+      headers: { 'Content-Type': 'application/json', ...authHeaders },
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(parseErrorMessage(data, 'Could not fetch profile'));
+    return data;
+  },
+
+  /** Update profile attributes */
+  async updateProfile(profileData, authHeaders) {
+    const res = await fetch(`${API_BASE}/auth/me`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', ...authHeaders },
+      body: JSON.stringify(profileData),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(parseErrorMessage(data, 'Could not update profile'));
+    return data;
+  },
+};
+
+// Helper to inject auth header into generatePlanStream
+export async function generatePlanStreamAuth(formData, authHeader, onDelta, onComplete, onError, onRaw) {
+  return generatePlanStream(formData, onDelta, onComplete, onError, onRaw, authHeader);
+}
+
+/**
+ * Context-aware AI Assistant chat — streams response as SSE.
+ * POST /api/assistant/chat
+ */
+export async function assistantChat(message, language, history, onDelta, onComplete, onError, extraHeaders = {}, location = null) {
+  try {
+    const body = { message, language, history };
+    if (location) body.location = location;
+
+    const response = await fetch(`${API_BASE}/assistant/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...extraHeaders },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(parseErrorMessage(err, 'Assistant error'));
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const events = buffer.split('\n\n');
+      buffer = events.pop() ?? '';
+
+      for (const event of events) {
+        const dataLine = event
+          .split('\n')
+          .filter(l => l.startsWith('data: '))
+          .map(l => l.slice(6))
+          .join('');
+
+        if (!dataLine) continue;
+
+        try {
+          const payload = JSON.parse(dataLine);
+          if (payload.type === 'delta')    onDelta?.(payload.text);
+          if (payload.type === 'complete') onComplete?.(payload.text);
+          if (payload.type === 'error')    onError?.(new Error(payload.message));
+        } catch {
+          // Ignore unparseable frames
+        }
+      }
+    }
+  } catch (err) {
+    onError?.(err);
+  }
 }

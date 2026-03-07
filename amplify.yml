@@ -7,7 +7,8 @@ frontend:
         - npm ci
     build:
       commands:
-        - npm run build
+        # REACT_APP_API_URL is empty → relative /api calls, proxied by Amplify rewrite below
+        - REACT_APP_API_URL="" REACT_APP_DEV_BYPASS_AUTH=false npm run build
   artifacts:
     baseDirectory: frontend/build
     files:
@@ -15,3 +16,27 @@ frontend:
   cache:
     paths:
       - frontend/node_modules/**/*
+
+  customHeaders:
+    - pattern: '**/*'
+      headers:
+        - key: Strict-Transport-Security
+          value: max-age=31536000; includeSubDomains
+        - key: X-Content-Type-Options
+          value: nosniff
+        - key: X-Frame-Options
+          value: DENY
+        - key: Cache-Control
+          value: no-store
+
+  rewrites:
+    # 1. Proxy API calls → ECS backend via ALB
+    - source:    '/api/<*>'
+      target:    'http://chalokisaan-alb-229245969.ap-south-1.elb.amazonaws.com/api/<*>'
+      status:    '200'
+      condition: null
+    # 2. SPA fallback — all non-asset paths serve index.html
+    - source:    '</^[^.]+$|\.(?!(css|gif|ico|jpg|jpeg|js|png|txt|svg|woff|woff2|ttf|map|json)$)([^.]+$)/>'
+      target:    '/index.html'
+      status:    '200'
+      condition: null

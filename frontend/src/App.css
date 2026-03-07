@@ -1,4 +1,78 @@
 .app {
   min-height: 100vh;
   position: relative;
+  background: var(--bg);
 }
+
+/* Desktop: when TopNav is showing, give body a top offset */
+@media (min-width: 768px) {
+  .app--with-nav {
+    padding-top: 0; /* TopNav is sticky, no extra padding needed */
+  }
+
+  /* Placeholders: no bottom nav on desktop, use window height */
+  .app__placeholder {
+    min-height: calc(100dvh - 64px); /* subtract TopNav height */
+    padding-bottom: 0;
+  }
+}
+
+/* ── Placeholder screens ── */
+.app__placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  padding-bottom: var(--nav-h, 64px);
+}
+
+.app__placeholder-inner {
+  text-align: center;
+  padding: var(--sp-8) var(--sp-6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.app__placeholder-inner span {
+  font-size: 48px;
+  margin-bottom: var(--sp-1);
+}
+
+.app__placeholder-inner h2 {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--ink);
+  font-family: var(--font-body);
+}
+
+.app__placeholder-inner p {
+  font-size: 14px;
+  color: var(--ink-3);
+  max-width: 240px;
+}
+
+.app__placeholder-btn {
+  margin-top: var(--sp-2);
+  background: var(--g-500);
+  color: #fff;
+  border: none;
+  border-radius: var(--r-md);
+  padding: 13px var(--sp-6);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: background var(--dur-fast) var(--ease-out),
+              transform var(--dur-fast) var(--ease-out);
+  box-shadow: var(--shadow-sm);
+}
+
+.app__placeholder-btn:hover {
+  background: var(--g-600);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.app__placeholder-btn:active { transform: scale(0.97); }

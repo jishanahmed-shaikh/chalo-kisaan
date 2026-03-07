@@ -1,0 +1,526 @@
+/* ── AI Farm Plan Page ───────────────────────────────────────────────────── */
+
+.plan {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  background: var(--bg);
+}
+
+/* ── Hero Image ── */
+.plan__hero {
+  position: relative;
+  background: var(--ink);
+}
+
+.plan__hero-img-wrap {
+  position: relative;
+  height: 260px;
+  overflow: hidden;
+}
+
+.plan__hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.plan__hero-placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, var(--g-900) 0%, var(--g-700) 50%, var(--g-500) 100%);
+}
+
+/* Nav buttons */
+.plan__nav-btn {
+  position: absolute;
+  top: 16px;
+  width: 36px;
+  height: 36px;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(8px);
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #fff;
+  transition: background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.plan__nav-btn:hover { background: rgba(0,0,0,0.65); }
+
+.plan__nav-btn--back  { left: 16px; }
+.plan__nav-btn--share { right: 16px; }
+
+/* AI Vision badge */
+.plan__viz-badge {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--g-600);
+  color: #fff;
+  border: none;
+  border-radius: var(--r-full);
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-body);
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.30);
+  transition: background 0.15s;
+}
+
+.plan__viz-badge--active { background: var(--g-500); }
+
+/* Title row */
+.plan__hero-footer {
+  background: var(--ink);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.plan__title {
+  font-size: 20px;
+  font-weight: 800;
+  color: #fff;
+  font-family: var(--font-body);
+  flex: 1;
+  margin-right: 12px;
+}
+
+/* Vision toggle */
+.plan__vision-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.plan__toggle-label {
+  font-size: 11px;
+  color: rgba(255,255,255,0.6);
+  white-space: nowrap;
+}
+
+.plan__toggle-label--active {
+  color: var(--g-400);
+  font-weight: 600;
+}
+
+.plan__toggle-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+}
+
+.plan__toggle-track {
+  width: 36px;
+  height: 20px;
+  background: rgba(255,255,255,0.25);
+  border-radius: var(--r-full);
+  position: relative;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  padding: 2px;
+}
+
+.plan__toggle-track--on { background: var(--g-500); }
+
+.plan__toggle-thumb {
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+
+.plan__toggle-track--on .plan__toggle-thumb {
+  transform: translateX(16px);
+}
+
+/* ── Scroll Content ── */
+.plan__content {
+  flex: 1;
+  padding: 20px 16px 0;
+  overflow-y: auto;
+}
+
+/* ── Section ── */
+.plan__section {
+  margin-bottom: 16px;
+}
+
+.plan__section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.plan__section-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--ink);
+  font-family: var(--font-body);
+}
+
+.plan__section-badge {
+  background: var(--g-100);
+  color: var(--g-700);
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: var(--r-full);
+  padding: 4px 12px;
+}
+
+/* ── Step Cards ── */
+.plan__step-card {
+  background: #fff;
+  border-radius: var(--r-md);
+  padding: 16px;
+  margin-bottom: 8px;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  border: 1.5px solid transparent;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+  transition: border-color 0.15s;
+}
+
+.plan__step-card--active {
+  border-color: var(--g-300);
+  background: var(--g-50);
+}
+
+.plan__step-num {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-3);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.plan__step-num--active {
+  background: var(--g-600);
+  color: #fff;
+}
+
+.plan__step-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+
+.plan__step-desc {
+  font-size: 13px;
+  color: var(--ink-3);
+  line-height: 1.5;
+  margin-bottom: 6px;
+}
+
+.plan__step-duration {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-4);
+}
+
+.plan__step-card--active .plan__step-duration {
+  color: var(--g-600);
+}
+
+/* ── Cost Card ── */
+.plan__cost-card {
+  background: #fff;
+  border-radius: var(--r-md);
+  padding: 18px;
+  box-shadow: 0 1px 8px rgba(0,0,0,0.05);
+}
+
+.plan__cost-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.plan__cost-label {
+  font-size: 12px;
+  color: var(--ink-3);
+  margin-bottom: 4px;
+}
+
+.plan__cost-total {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--ink);
+  font-family: var(--font-body);
+}
+
+.plan__cost-icon {
+  width: 40px;
+  height: 40px;
+  background: var(--saffron-bg);
+  border-radius: var(--r-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.plan__cost-bar {
+  margin-bottom: 12px;
+}
+
+.plan__cost-bar-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+.plan__cost-bar-label { color: var(--ink-3); font-weight: 500; }
+.plan__cost-bar-value { color: var(--ink); font-weight: 700; }
+
+.plan__cost-bar-track {
+  height: 7px;
+  background: var(--border);
+  border-radius: var(--r-full);
+  overflow: hidden;
+}
+
+.plan__cost-bar-fill {
+  height: 100%;
+  border-radius: var(--r-full);
+  transition: width 0.9s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+/* ── Income Card ── */
+.plan__income-card {
+  background: #fff;
+  border-radius: var(--r-md);
+  padding: 18px;
+  box-shadow: 0 1px 8px rgba(0,0,0,0.05);
+}
+
+.plan__income-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.plan__income-label {
+  font-size: 12px;
+  color: var(--ink-3);
+  margin-bottom: 6px;
+}
+
+.plan__income-value {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.plan__income-badge {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--g-700);
+  background: var(--g-100);
+  border-radius: var(--r-full);
+  padding: 3px 10px;
+}
+
+.plan__income-icon {
+  width: 40px;
+  height: 40px;
+  background: var(--g-50);
+  border-radius: var(--r-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Chart ── */
+.plan__chart {
+  height: 80px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.plan__chart-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  width: 100%;
+  height: 100%;
+}
+
+.plan__chart-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.plan__chart-bar {
+  width: 100%;
+  background: var(--border);
+  border-radius: 4px 4px 0 0;
+  min-height: 8px;
+}
+
+.plan__chart-bar--active {
+  background: var(--g-500);
+}
+
+.plan__chart-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--ink-4);
+}
+
+.plan__chart-label--active {
+  color: var(--g-600);
+  font-weight: 700;
+}
+
+/* ── Verified ── */
+.plan__verified {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--ink-3);
+  padding: 8px 0 16px;
+}
+
+/* ── Actions ── */
+.plan__actions {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 10px;
+  padding-bottom: 4px;
+}
+
+.plan__action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 15px 10px;
+  border-radius: var(--r-md);
+  font-size: 14px;
+  font-weight: 700;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  border: none;
+}
+
+.plan__action-btn--outline {
+  background: #fff;
+  color: var(--ink);
+  border: 1.5px solid var(--border-dark);
+}
+
+.plan__action-btn--outline:hover { background: var(--bg); }
+
+.plan__action-btn--solid {
+  background: var(--g-500);
+  color: #fff;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 13px;
+  box-shadow: 0 4px 16px rgba(41,198,33,0.30);
+}
+
+.plan__action-btn--solid:hover { background: var(--g-600); }
+
+/* ── Empty state ── */
+.plan__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  gap: 12px;
+  padding: 32px;
+  text-align: center;
+}
+
+.plan__empty h2 { font-size: 20px; color: var(--ink); }
+.plan__empty p  { font-size: 14px; color: var(--ink-3); }
+
+.plan__back-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  background: var(--g-500);
+  color: #fff;
+  border: none;
+  border-radius: var(--r-md);
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+
+.plan__bottom-pad { height: 24px; }
+
+/* ── Desktop ── */
+@media (min-width: 768px) {
+  .plan {
+    max-width: 720px;
+    margin: 0 auto;
+    box-shadow: 0 0 0 1px var(--border), 0 8px 40px rgba(0,0,0,0.06);
+  }
+
+  .plan__hero-img-wrap { height: 380px; }
+
+  .plan__content {
+    padding: 28px 32px 0;
+  }
+
+  .plan__actions {
+    grid-template-columns: 1fr 1.8fr;
+  }
+}

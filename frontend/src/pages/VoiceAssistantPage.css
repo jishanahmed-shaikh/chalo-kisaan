@@ -1,0 +1,818 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   VoiceAssistantPage.css — Full-screen AI Voice Assistant
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Root container ──────────────────────────────────────────────────────── */
+.va {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  max-height: 100dvh;
+  background: linear-gradient(165deg, var(--g-50) 0%, #FFFFFF 55%, var(--g-50) 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── Header — slim, single row ───────────────────────────────────────────── */
+.va__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px var(--page-px, 16px) 8px;
+  background: rgba(255,255,255,0.94);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  gap: 8px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.va__header-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  background: var(--g-50);
+  border: 1px solid var(--border);
+  border-radius: var(--r-full);
+  color: var(--ink-2);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background var(--dur-fast) ease, color var(--dur-fast) ease;
+}
+
+.va__header-btn:hover { background: var(--g-100); color: var(--g-600); }
+.va__header-btn:active { transform: scale(0.94); }
+
+.va__header-center {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  justify-content: center;
+}
+
+.va__header-logo {
+  height: 22px;
+  width: auto;
+}
+
+.va__header-title {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--g-700);
+  letter-spacing: 0.06em;
+  line-height: 1;
+}
+
+.va__header-sub {
+  font-size: 10px;
+  color: var(--ink-3);
+  font-weight: 500;
+  line-height: 1;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.va__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+/* ── Lang selector ───────────────────────────────────────────────────────── */
+.va__lang-wrap {
+  position: relative;
+}
+
+.va__lang-trigger {
+  height: 28px;
+  padding: 0 10px;
+  border-radius: var(--r-full);
+  border: 1px solid var(--border);
+  background: var(--g-50);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-2);
+  cursor: pointer;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.va__lang-flag {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.va__lang-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 49;  /* Lower than the menu, won't block interactions */
+}
+
+@keyframes fadeSlideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.va__lang-opt {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 16px;
+  text-align: left;
+  background: none;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.va__lang-opt-labels {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 1px;
+}
+
+.va__lang-opt-native {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.2;
+}
+
+.va__lang-opt-eng {
+  font-size: 11px;
+  color: var(--ink-4);
+  font-weight: 400;
+  line-height: 1;
+}
+
+.va__lang-opt:hover { background: var(--g-50); }
+.va__lang-opt--active {
+  color: var(--g-600);
+  background: var(--g-50);
+}
+
+.va__lang-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 100;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  list-style: none;
+  overflow: hidden;
+  min-width: 160px;
+  animation: fadeSlideDown 0.15s ease;
+}
+
+/* ── Context banner ──────────────────────────────────────────────────────── */
+.va__context-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  margin: var(--sp-1) var(--page-px, 16px) 0;
+  padding: var(--sp-1) var(--sp-3);
+  border-radius: var(--r-md);
+  background: var(--g-50);
+  border: 1px solid var(--g-200);
+  font-size: 11px;
+  color: var(--forest);
+  font-weight: 600;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-xs);
+}
+
+.va__context-loc {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+  font-size: 10px;
+  color: var(--g-600);
+  font-weight: 600;
+  background: var(--g-100);
+  padding: 2px 6px;
+  border-radius: var(--r-full);
+  white-space: nowrap;
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Status pill ─────────────────────────────────────────────────────────── */
+.va__status-row {
+  display: flex;
+  justify-content: center;
+  padding: var(--sp-1) var(--page-px, 16px) 0;
+  flex-shrink: 0;
+}
+
+.va__status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 var(--sp-3);
+  border-radius: var(--r-full);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  transition: background var(--dur-fast) var(--ease-out),
+              color var(--dur-fast) var(--ease-out);
+}
+
+.va__status-pill--listening {
+  background: var(--g-100);
+  color: var(--g-700);
+}
+
+.va__status-pill--thinking {
+  background: var(--saffron-bg);
+  color: var(--saffron);
+}
+
+.va__status-pill--speaking {
+  background: var(--g-50);
+  color: var(--g-600);
+}
+
+.va__status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.va__status-dot--blink {
+  animation: statusBlink 0.9s ease-in-out infinite;
+}
+
+.va__status-dot--speaking {
+  animation: statusBlink 1.4s ease-in-out infinite;
+}
+
+@keyframes statusBlink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.25; }
+}
+
+/* ── Quick-ask chips ─────────────────────────────────────────────────────── */
+.va__quick-asks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--page-px, 16px) var(--sp-1);
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.va__quick-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-full);
+  border: 1.5px solid var(--g-200);
+  background: #fff;
+  font-family: var(--font-devanagari);
+  font-size: 12px;
+  color: var(--ink);
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease-out);
+  white-space: nowrap;
+  box-shadow: var(--shadow-xs);
+}
+
+.va__quick-chip:hover {
+  background: var(--g-50);
+  border-color: var(--forest);
+  color: var(--forest);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
+}
+
+.va__quick-chip:active { transform: scale(0.96); }
+
+.va__quick-chip-icon { font-size: 14px; }
+.va__quick-chip-text { font-weight: 500; }
+
+/* ── Waveform ────────────────────────────────────────────────────────────── */
+.va__waveform {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 36px;
+  flex-shrink: 0;
+  padding: 0 var(--sp-6);
+  margin-bottom: var(--sp-1);
+}
+
+.va__waveform-bar {
+  width: 4px;
+  border-radius: 2px;
+  background: var(--border-dark);
+  height: 8px;
+}
+
+.va__waveform--active .va__waveform-bar {
+  background: var(--g-500);
+  animation: waveAnim 1s ease-in-out infinite alternate;
+}
+
+.va__waveform--active .va__waveform-bar:nth-child(1)  { animation-duration: 0.7s; }
+.va__waveform--active .va__waveform-bar:nth-child(2)  { animation-duration: 0.85s; }
+.va__waveform--active .va__waveform-bar:nth-child(3)  { animation-duration: 0.6s; }
+.va__waveform--active .va__waveform-bar:nth-child(4)  { animation-duration: 1.0s; }
+.va__waveform--active .va__waveform-bar:nth-child(5)  { animation-duration: 0.75s; }
+.va__waveform--active .va__waveform-bar:nth-child(6)  { animation-duration: 0.55s; }
+.va__waveform--active .va__waveform-bar:nth-child(7)  { animation-duration: 0.9s; }
+.va__waveform--active .va__waveform-bar:nth-child(8)  { animation-duration: 0.65s; }
+.va__waveform--active .va__waveform-bar:nth-child(9)  { animation-duration: 0.8s; }
+
+@keyframes waveAnim {
+  from { height: 6px; }
+  to   { height: 32px; }
+}
+
+/* ── Messages (chat history) — takes ALL remaining space ────────────────── */
+.va__messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--sp-3) var(--page-px, 16px) var(--sp-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  scroll-behavior: smooth;
+  /* fade in from top edge */
+  mask-image: linear-gradient(to bottom, transparent 0%, black 24px);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 24px);
+}
+
+.va__messages::-webkit-scrollbar { width: 3px; }
+.va__messages::-webkit-scrollbar-thumb { background: var(--border-dark); border-radius: 2px; }
+
+/* ── Chat bubble ─────────────────────────────────────────────────────────── */
+.va__bubble {
+  display: flex;
+  gap: 8px;
+  max-width: 88%;
+  animation: bubblePop var(--dur-base) var(--ease-out);
+}
+
+@keyframes bubblePop {
+  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.va__bubble--user { align-self: flex-end; flex-direction: row-reverse; }
+.va__bubble--ai   { align-self: flex-start; }
+
+.va__bubble-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--g-500);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+  box-shadow: var(--shadow-xs);
+}
+
+.va__bubble-body {
+  background: #fff;
+  border-radius: var(--r-md);
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-xs);
+  position: relative;
+}
+
+.va__bubble--user .va__bubble-body {
+  background: var(--g-600);
+  border-color: var(--g-600);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(45,113,50,0.15);
+}
+
+.va__bubble-text {
+  font-size: 14px;
+  line-height: 1.6;
+  word-break: break-word;
+  animation: textAppear 0.3s ease-in-out;
+}
+
+.va__bubble-text--streaming {
+  animation: textAppearStreaming 0.15s ease-out;
+}
+
+@keyframes textAppear {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes textAppearStreaming {
+  from {
+    opacity: 0.6;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Markdown paragraph */
+.va__bubble-text p {
+  margin: 0 0 8px 0;
+  white-space: pre-wrap;
+}
+
+.va__bubble-text p:last-child {
+  margin-bottom: 0;
+}
+
+/* Markdown headings */
+.va__markdown-h1 {
+  font-size: 18px;
+  font-weight: 800;
+  margin: 8px 0 6px 0;
+  line-height: 1.4;
+}
+
+.va__markdown-h2 {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 7px 0 5px 0;
+  line-height: 1.4;
+}
+
+.va__markdown-h3 {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 6px 0 4px 0;
+  line-height: 1.4;
+}
+
+.va__markdown-h4,
+.va__markdown-h5,
+.va__markdown-h6 {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 5px 0 3px 0;
+  line-height: 1.4;
+}
+
+/* Markdown lists */
+.va__markdown-ul,
+.va__markdown-ol {
+  margin: 6px 0 6px 16px;
+  padding: 0;
+  line-height: 1.8;
+}
+
+.va__markdown-ul li,
+.va__markdown-ol li {
+  margin: 3px 0;
+  font-size: 14px;
+  white-space: pre-wrap;
+}
+
+.va__markdown-p {
+  margin: 0 0 8px 0;
+}
+
+.va__markdown-p:last-child {
+  margin-bottom: 0;
+}
+
+/* Inline code */
+.va__inline-code {
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.va__bubble--user .va__inline-code {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+/* Links */
+.va__link {
+  color: var(--g-600);
+  text-decoration: none;
+  border-bottom: 1px solid var(--g-300);
+  transition: color 0.15s;
+  font-weight: 500;
+}
+
+.va__link:hover {
+  color: var(--g-700);
+  border-bottom-color: var(--g-600);
+}
+
+.va__bubble--user .va__link {
+  color: #fff;
+  border-bottom-color: rgba(255, 255, 255, 0.6);
+}
+
+.va__bubble--user .va__link:hover {
+  border-bottom-color: #fff;
+}
+
+.va__bubble--user .va__bubble-text { color: #fff; }
+
+.va__bubble-cursor {
+  display: inline-block;
+  color: var(--g-500);
+  animation: cursorBlink 0.8s steps(1) infinite;
+  margin-left: 2px;
+  font-size: 16px;
+}
+
+@keyframes cursorBlink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+.va__bubble--streaming .va__bubble-body {
+  border-color: var(--g-200);
+  background: var(--g-50);
+}
+
+.va__bubble-retry {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--terracotta);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+/* ── Bottom controls ─────────────────────────────────────────────────────── */
+.va__controls {
+  flex-shrink: 0;
+  padding: var(--sp-2) var(--page-px, 16px) calc(env(safe-area-inset-bottom, 0px) + var(--sp-3) + var(--nav-h, 64px));
+  background: rgba(255,255,255,0.94);
+  border-top: 1px solid var(--border);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* ── Text input row ─────────────────────────────────────────────────────── */
+.va__text-row {
+  margin-bottom: var(--sp-3);
+}
+
+/* Container that wraps input + action buttons */
+.va__text-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 0;
+}
+
+.va__text-input {
+  flex: 1;
+  width: 100%;
+  padding: 11px var(--sp-4);
+  border-radius: var(--r-full);
+  border: 1.5px solid var(--border);
+  background: #fff;
+  font-size: 14px;
+  color: var(--ink);
+  font-family: var(--font-body);
+  transition: border-color var(--dur-fast) var(--ease-out),
+              box-shadow var(--dur-fast) var(--ease-out);
+  outline: none;
+  box-sizing: border-box;
+  box-shadow: var(--shadow-xs);
+}
+
+.va__text-input:focus {
+  border-color: var(--g-400);
+  box-shadow: 0 0 0 3px rgba(41,198,33,0.1), var(--shadow-sm);
+}
+
+.va__text-input::placeholder { color: var(--ink-4); }
+
+/* Buttons inside text row */
+.va__text-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  flex-shrink: 0;
+}
+
+.va__text-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-full);
+  border: none;
+  background: var(--g-50);
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease-out);
+  flex-shrink: 0;
+}
+
+.va__text-btn:hover {
+  background: var(--g-100);
+  color: var(--g-600);
+}
+
+.va__text-btn:active { transform: scale(0.90); }
+
+/* Cancel button */
+.va__cancel-inline {
+  color: var(--ink-3);
+}
+
+.va__cancel-inline:hover {
+  color: var(--ink);
+  background: var(--border);
+}
+
+/* Send button */
+.va__send-inline {
+  color: var(--ink-4);
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.va__send-inline--active {
+  color: #fff;
+  background: var(--g-600);
+  opacity: 1;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(45,113,50,0.2);
+}
+
+.va__send-inline--active:hover {
+  background: var(--g-700);
+  box-shadow: 0 3px 12px rgba(45,113,50,0.3);
+}
+
+.va__send-inline--active:active { transform: scale(0.90); }
+
+/* Mic button row */
+.va__mic-row {
+  display: flex;
+  justify-content: center;
+}
+
+/* ── Hero Mic button — matches BottomNav hero style ─────────────────────── */
+.va__mic {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--g-500);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-top: calc(var(--sp-1) * -2);
+  transition: background var(--dur-fast) var(--ease-out),
+              transform var(--dur-fast) var(--ease-out),
+              box-shadow var(--dur-fast) var(--ease-out);
+  box-shadow: 0 4px 16px rgba(41,198,33,0.35);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.va__mic:hover  {
+  background: var(--g-600);
+  transform: scale(1.06);
+  box-shadow: 0 6px 20px rgba(41,198,33,0.45);
+}
+.va__mic:active { transform: scale(0.94); }
+
+/* Pulse rings when listening */
+.va__mic-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid var(--g-400);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.va__mic--listening .va__mic-ring--1 {
+  animation: micPulse 1.6s ease-out infinite;
+}
+
+.va__mic--listening .va__mic-ring--2 {
+  animation: micPulse 1.6s ease-out 0.5s infinite;
+}
+
+@keyframes micPulse {
+  0%   { transform: scale(1);    opacity: 0.7; }
+  100% { transform: scale(1.8);  opacity: 0; }
+}
+
+.va__mic--listening {
+  background: var(--g-700);
+  box-shadow: 0 4px 20px rgba(26,128,21,0.5);
+}
+
+.va__mic-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Spin util ───────────────────────────────────────────────────────────── */
+.spin {
+  animation: spinAnim 0.8s linear infinite;
+}
+
+@keyframes spinAnim {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOBILE (< 768px) — BottomNav hero IS the mic; hide the in-page mic button
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 767px) {
+  .va__mic {
+    display: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DESKTOP / WEB (≥ 768px)
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (min-width: 768px) {
+  .va {
+    max-width: 540px;
+    margin: 0 auto;
+    min-height: calc(100dvh - 64px);
+    max-height: calc(100dvh - 64px);
+    border-left:  1px solid var(--border);
+    border-right: 1px solid var(--border);
+    box-shadow: 0 0 80px rgba(0,0,0,0.06);
+  }
+
+  /* Desktop has TopNav, no BottomNav — remove BottomNav offset */
+  .va__controls {
+    padding: var(--sp-2) var(--sp-4) calc(env(safe-area-inset-bottom, 0px) + var(--sp-3));
+  }
+
+  .va__header {
+    padding: 10px var(--sp-5) 8px;
+  }
+
+  .va__text-input {
+    font-size: 15px;
+  }
+
+  .va__bubble {
+    max-width: 82%;
+  }
+
+  .va__quick-chip {
+    font-size: 13px;
+    padding: 8px 16px;
+  }
+}
