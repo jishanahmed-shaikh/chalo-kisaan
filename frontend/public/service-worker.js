@@ -47,7 +47,7 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET' || url.protocol === 'chrome-extension:') return;
 
   // API calls: network only (don't cache)
-  if (url.pathname.startsWith('/api/')) {
+  if (url.pathname.startsWith('/api/') || url.hostname.includes('api.chalokisaan')) {
     event.respondWith(fetch(request).catch(() =>
       new Response(JSON.stringify({ error: 'Offline - please check your connection' }), {
         headers: { 'Content-Type': 'application/json' },
