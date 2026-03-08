@@ -185,6 +185,12 @@ const t = {
   common_close:       { hindi: 'बंद करें', english: 'Close', marathi: 'बंद करा', punjabi: 'ਬੰਦ ਕਰੋ', gujarati: 'બંધ કરો' },
   common_alerts_soon: { hindi: 'बुकिंग अनुरोध और अलर्ट जल्द आ रहे हैं।', english: 'Booking requests and alerts coming soon.', marathi: 'बुकिंग विनंत्या आणि अलर्ट लवकरच येत आहेत.', punjabi: 'ਬੁਕਿੰਗ ਬੇਨਤੀਆਂ ਅਤੇ ਅਲਰਟ ਜਲਦੀ ਆ ਰਹੇ ਹਨ।', gujarati: 'બુકિંગ વિનંતીઓ અને ચેતવણીઓ જલ્દી આવી રહ્યા છે.' },
   common_alerts:      { hindi: 'अलर्ट', english: 'Alerts', marathi: 'अलर्ट', punjabi: 'ਅਲਰਟ', gujarati: 'ચેતવણીઓ' },
+
+  // ── SavedPlansPage ──────────────────────────────────────────────
+  sp_steps:            { hindi: 'चरण', english: 'Steps', marathi: 'चरण', punjabi: 'ਪੜਾਅ', gujarati: 'પગલાં' },
+  sp_per_month:        { hindi: '/माह', english: '/mo', marathi: '/महिना', punjabi: '/ਮਾਸ', gujarati: '/માસ' },
+  sp_activities:       { hindi: 'गतिविधियां', english: 'activities', marathi: 'क्रियाकलाप', punjabi: 'ਗਤੀਵਿਧੀਆਂ', gujarati: 'પ્રવૃત્તિઓ' },
+  sp_view:             { hindi: 'देखें', english: 'View', marathi: 'पहा', punjabi: 'ਦੇਖੋ', gujarati: 'જુઓ' },
 };
 
 /**

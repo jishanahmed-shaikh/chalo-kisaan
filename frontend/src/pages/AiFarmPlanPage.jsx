@@ -8,6 +8,7 @@ import {
 } from '@tabler/icons-react';
 import { generateVisualization } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import './AiFarmPlanPage.css';
 
 const fmt = (n) => {
@@ -101,6 +102,7 @@ export default function AiFarmPlanPage({ planData, farmData, farmImage, onBack }
   const [vizUrl, setVizUrl] = useState(null);
   const [vizLoading, setVizLoading] = useState(false);
   const { authHeader } = useAuth();
+  const { t } = useLanguage();
 
   const loadViz = useCallback(async () => {
     if (vizUrl || vizLoading || !farmData) return;
@@ -204,9 +206,9 @@ export default function AiFarmPlanPage({ planData, farmData, farmImage, onBack }
           <div className="plan__section-header">
             <h2 className="plan__section-title">
               <IconChecklist size={18} strokeWidth={2} color="var(--g-600)" />
-              Setup Roadmap
+              {t('myl_setup_roadmap')}
             </h2>
-            <span className="plan__section-badge">{steps.length || 3} Steps</span>
+            <span className="plan__section-badge">{steps.length || 3} {t('sp_steps') || 'Steps'}</span>
           </div>
 
           {steps.length > 0 ? steps.map((step, i) => (
@@ -235,7 +237,7 @@ export default function AiFarmPlanPage({ planData, farmData, farmImage, onBack }
           <div className="plan__cost-card">
             <div className="plan__cost-header">
               <div>
-                <div className="plan__cost-label">Estimated Setup Cost</div>
+                <div className="plan__cost-label">{t('myl_total_cost')}</div>
                 <div className="plan__cost-total">{fmt(totalCost)}</div>
               </div>
               <div className="plan__cost-icon">
@@ -243,13 +245,13 @@ export default function AiFarmPlanPage({ planData, farmData, farmImage, onBack }
               </div>
             </div>
             <CostBar
-              label="Materials (Bamboo/Canvas)"
+              label={t('myl_materials')}
               amount={materials}
               max={totalCost}
               color="var(--saffron)"
             />
             <CostBar
-              label="Labor &amp; Permits"
+              label={t('myl_labor')}
               amount={labor}
               max={totalCost}
               color="var(--g-700)"
@@ -262,11 +264,11 @@ export default function AiFarmPlanPage({ planData, farmData, farmImage, onBack }
           <div className="plan__income-card">
             <div className="plan__income-header">
               <div>
-                <div className="plan__income-label">Projected Monthly Income</div>
+                <div className="plan__income-label">{t('myl_monthly_income')}</div>
                 <div className="plan__income-value">
                   {fmt(monthlyIncome)}
                   <span className="plan__income-badge">
-                    +{vsAvg}% vs avg
+                    +{vsAvg}% {t('myl_vs_avg')}
                   </span>
                 </div>
               </div>
@@ -281,7 +283,7 @@ export default function AiFarmPlanPage({ planData, farmData, farmImage, onBack }
         {/* ── Verified Footer ── */}
         <div className="plan__verified">
           <IconShield size={14} strokeWidth={2} color="var(--g-600)" />
-          AI Plan Verified by Agri-Experts
+          {t('myl_ai_verified')}
         </div>
 
         {/* ── Action Buttons ── */}
