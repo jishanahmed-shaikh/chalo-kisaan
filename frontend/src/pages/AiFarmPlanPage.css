@@ -194,15 +194,15 @@
 /* ── Step Cards ── */
 .plan__step-card {
   background: #fff;
-  border-radius: var(--r-md);
+  border-radius: 12px;
   padding: 16px;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
   display: flex;
   gap: 14px;
   align-items: flex-start;
   border: 1.5px solid transparent;
-  box-shadow: 0 1px 6px rgba(0,0,0,0.05);
-  transition: border-color 0.15s;
+  box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
 
 .plan__step-card--active {
@@ -260,9 +260,9 @@
 /* ── Cost Card ── */
 .plan__cost-card {
   background: #fff;
-  border-radius: var(--r-md);
-  padding: 18px;
-  box-shadow: 0 1px 8px rgba(0,0,0,0.05);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
 }
 
 .plan__cost-header {
@@ -325,9 +325,9 @@
 /* ── Income Card ── */
 .plan__income-card {
   background: #fff;
-  border-radius: var(--r-md);
-  padding: 18px;
-  box-shadow: 0 1px 8px rgba(0,0,0,0.05);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
 }
 
 .plan__income-header {
@@ -509,16 +509,22 @@
 /* ── Desktop ── */
 @media (min-width: 768px) {
   .plan {
-    max-width: 720px;
+    max-width: 760px;
     margin: 0 auto;
     box-shadow: 0 0 0 1px var(--border), 0 8px 40px rgba(0,0,0,0.06);
   }
 
-  .plan__hero-img-wrap { height: 380px; }
+  .plan__hero-img-wrap { height: 400px; }
 
   .plan__content {
-    padding: 28px 32px 0;
+    padding: 32px 48px 0;
   }
+
+  .plan__section {
+    margin-bottom: 24px;
+  }
+
+  .plan__bottom-pad { height: 32px; }
 
   .plan__actions {
     grid-template-columns: 1fr 1.8fr;

@@ -88,6 +88,8 @@ def _build_farm_context(user: AuthUser) -> dict:
 
 def _build_user_context(user: AuthUser) -> dict:
     """Fetch user profile from Cognito for personalization."""
+    if user.is_guest:
+        return {"name": "", "address": ""}
     try:
         profile = get_user_profile(user.phone)
         return {
@@ -120,12 +122,17 @@ async def assistant_chat(req: AssistantChatRequest, user: AuthUser = Depends(req
             user_ctx["coordinates"] = f"{geo_lat:.4f},{geo_lng:.4f}"
 
     # Build conversation history for Bedrock
+    # Map 'ai' → 'assistant' and ensure history starts with 'user' role
     conv_history = []
     for msg in req.history[-10:]:  # Keep last 10 messages for context window
+        role = "user" if msg.role == "user" else "assistant"
         conv_history.append({
-            "role": "user" if msg.role == "user" else "assistant",
+            "role": role,
             "content": msg.text,
         })
+    # Bedrock requires first message to be 'user' — drop any leading assistant turns
+    while conv_history and conv_history[0]["role"] != "user":
+        conv_history.pop(0)
 
     async def event_stream():
         full_text = ""

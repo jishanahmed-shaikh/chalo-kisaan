@@ -306,15 +306,29 @@ export async function assistantChat(message, language, history, onDelta, onCompl
     const body = { message, language, history };
     if (location) body.location = location;
 
-    const response = await fetch(`${API_BASE}/assistant/chat`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...extraHeaders },
-      body: JSON.stringify(body),
-    });
+    // Use AbortController for a 30-second timeout on the initial connection
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+    let response;
+    try {
+      response = await fetch(`${API_BASE}/assistant/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...extraHeaders },
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeoutId);
+    }
 
     if (!response.ok) {
-      const err = await response.json();
-      throw new Error(parseErrorMessage(err, 'Assistant error'));
+      let errMsg = `Server error (${response.status})`;
+      try {
+        const err = await response.json();
+        errMsg = parseErrorMessage(err, errMsg);
+      } catch { /* ignore parse errors */ }
+      throw new Error(errMsg);
     }
 
     const reader = response.body.getReader();
@@ -349,6 +363,10 @@ export async function assistantChat(message, language, history, onDelta, onCompl
       }
     }
   } catch (err) {
-    onError?.(err);
+    if (err.name === 'AbortError') {
+      onError?.(new Error('Request timed out. Please check your connection and try again.'));
+    } else {
+      onError?.(err);
+    }
   }
 }

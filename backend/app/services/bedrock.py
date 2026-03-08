@@ -520,12 +520,22 @@ def chat_with_assistant(
     client = _bedrock_runtime()
 
     # Build messages array with conversation history
+    # Bedrock Converse API requires alternating user/assistant roles.
+    # Deduplicate consecutive same-role messages by merging them.
     messages = []
     for msg in history:
-        messages.append({
-            "role": msg["role"],
-            "content": [{"text": msg["content"]}],
-        })
+        role = msg["role"]
+        text = msg.get("content") or msg.get("text") or ""
+        if not text:
+            continue
+        if messages and messages[-1]["role"] == role:
+            # Merge consecutive same-role entries (prevents Bedrock ValidationException)
+            messages[-1]["content"][0]["text"] += "\n" + text
+        else:
+            messages.append({
+                "role": role,
+                "content": [{"text": text}],
+            })
 
     # Add current user message
     messages.append({
