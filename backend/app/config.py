@@ -78,11 +78,10 @@ class Settings(BaseSettings):
     # -- CORS --
     # Comma-separated list. In production, set via Secrets Manager / env var to your real domain.
     CORS_ORIGINS: str = (
-        "http://localhost:3000,"
-        "https://localhost:3000,"
         "https://localhost:3443,"
         "https://6ddkdsh6-8000.inc1.devtunnels.ms,"
         "https://6ddkdsh6-3443.inc1.devtunnels.ms,"
+        "https://master.d29avtsde3xnn7.amplifyapp.com,"  # Amplify preview
         "https://chalokisaan.in,"            # production — replace with real domain
         "https://www.chalokisaan.in"          # production www — replace with real domain
     )

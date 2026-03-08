@@ -8,8 +8,8 @@ frontend:
         - npm install
     build:
       commands:
-        # REACT_APP_API_URL is empty → relative /api calls, proxied by Amplify rewrite below
-        - REACT_APP_API_URL="" REACT_APP_DEV_BYPASS_AUTH=false npm run build
+        # Point API directly at the ALB — Amplify cannot reverse-proxy plain HTTP
+        - REACT_APP_API_URL="http://chalokisaan-alb-229245969.ap-south-1.elb.amazonaws.com/api" REACT_APP_DEV_BYPASS_AUTH=false npm run build
   artifacts:
     baseDirectory: frontend/build
     files:
@@ -31,12 +31,8 @@ frontend:
           value: no-store
 
   rewrites:
-    # 1. Proxy API calls → ECS backend via ALB
-    - source:    '/api/<*>'
-      target:    'http://chalokisaan-alb-229245969.ap-south-1.elb.amazonaws.com/api/<*>'
-      status:    '200'
-      condition: null
-    # 2. SPA fallback — all non-asset paths serve index.html
+    # API calls are baked into the JS bundle pointing directly at the ALB.
+    # SPA fallback — all non-asset paths serve index.html
     - source:    '</^[^.]+$|\.(?!(css|gif|ico|jpg|jpeg|js|png|txt|svg|woff|woff2|ttf|map|json)$)([^.]+$)/>'
       target:    '/index.html'
       status:    '200'
