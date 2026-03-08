@@ -29,8 +29,8 @@ jobs:
         working-directory: frontend
         run: npm run build
         env:
-          # Empty = relative /api URLs — Amplify rewrites /api/* → ALB
-          REACT_APP_API_URL: ""
+          # Direct ALB backend URL (HTTP) — browser allows fetch from HTTPS → HTTP
+          REACT_APP_API_URL: "http://chalokisaan-alb-229245969.ap-south-1.elb.amazonaws.com/api"
           REACT_APP_DEV_BYPASS_AUTH: "false"
 
       - name: Configure AWS credentials
@@ -45,4 +45,6 @@ jobs:
           aws amplify start-job \
             --app-id ${{ secrets.AMPLIFY_APP_ID }} \
             --branch-name master \
-            --job-type RELEASE
+            --job-type RELEASE \
+            --region ap-south-1
+
