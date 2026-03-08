@@ -1,0 +1,90 @@
+{
+  "family": "chalokisaan-api",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024",
+  "containerDefinitions": [
+    {
+      "name": "chalokisaan-api",
+      "image": "ACCOUNT_ID.dkr.ecr.ap-south-1.amazonaws.com/chalokisaan-api:latest",
+      "portMappings": [
+        {
+          "containerPort": 8000,
+          "hostPort": 8000,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {
+          "name": "API_DEBUG",
+          "value": "false"
+        },
+        {
+          "name": "AWS_REGION",
+          "value": "ap-south-1"
+        },
+        {
+          "name": "BEDROCK_REGION",
+          "value": "us-east-1"
+        },
+        {
+          "name": "POLLY_REGION",
+          "value": "us-east-1"
+        },
+        {
+          "name": "LOG_LEVEL",
+          "value": "INFO"
+        }
+      ],
+      "secrets": [
+        {
+          "name": "DATABASE_URL",
+          "valueFrom": "arn:aws:secretsmanager:ap-south-1:ACCOUNT_ID:secret:chalokisaan/database_url"
+        },
+        {
+          "name": "JWT_SECRET_KEY",
+          "valueFrom": "arn:aws:secretsmanager:ap-south-1:ACCOUNT_ID:secret:chalokisaan/jwt_secret_key"
+        },
+        {
+          "name": "AWS_ACCESS_KEY_ID",
+          "valueFrom": "arn:aws:secretsmanager:ap-south-1:ACCOUNT_ID:secret:chalokisaan/aws_access_key_id"
+        },
+        {
+          "name": "AWS_SECRET_ACCESS_KEY",
+          "valueFrom": "arn:aws:secretsmanager:ap-south-1:ACCOUNT_ID:secret:chalokisaan/aws_secret_access_key"
+        },
+        {
+          "name": "AWS_BEARER_TOKEN_BEDROCK",
+          "valueFrom": "arn:aws:secretsmanager:ap-south-1:ACCOUNT_ID:secret:chalokisaan/bedrock_bearer_token"
+        },
+        {
+          "name": "COGNITO_USER_POOL_ID",
+          "valueFrom": "arn:aws:secretsmanager:ap-south-1:ACCOUNT_ID:secret:chalokisaan/cognito_user_pool_id"
+        },
+        {
+          "name": "COGNITO_APP_CLIENT_ID",
+          "valueFrom": "arn:aws:secretsmanager:ap-south-1:ACCOUNT_ID:secret:chalokisaan/cognito_app_client_id"
+        },
+        {
+          "name": "COGNITO_CLIENT_SECRET",
+          "valueFrom": "arn:aws:secretsmanager:ap-south-1:ACCOUNT_ID:secret:chalokisaan/cognito_client_secret"
+        },
+        {
+          "name": "CORS_ORIGINS",
+          "valueFrom": "arn:aws:secretsmanager:ap-south-1:ACCOUNT_ID:secret:chalokisaan/cors_origins"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/chalokisaan-api",
+          "awslogs-region": "ap-south-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ],
+  "executionRoleArn": "arn:aws:iam::ACCOUNT_ID:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::ACCOUNT_ID:role/chalokisaan-ecs-task-role"
+}
