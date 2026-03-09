@@ -61,6 +61,18 @@ def transcribe_audio(audio_base64: str, language: str = "hindi") -> str:
 
     Raises RuntimeError on failure.
     """
+    # Dev/test mode: if AWS_ACCESS_KEY_ID is not set, return a demo response
+    if not settings.AWS_ACCESS_KEY_ID:
+        logger.warning("AWS credentials not configured. Returning demo transcript.")
+        demo_responses = {
+            "hindi": "नमस्ते, यह एक परीक्षण है।",
+            "english": "Hello, this is a test.",
+            "marathi": "नमस्कार, हे एक चाचणी आहे.",
+            "punjabi": "ਨਮਸਤੇ, ਇਹ ਇਕ ਪ ਰੀਖਤ ਹੈ।",
+            "gujarati": "નમસ્તે, આ એક પરીક્ષણ છે।",
+        }
+        return demo_responses.get(language, "Demo transcript")
+
     lang_code = LANG_CODE_MAP.get(language, "hi-IN")
     audio_bytes = base64.b64decode(audio_base64)
 

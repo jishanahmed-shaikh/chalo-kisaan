@@ -1,4 +1,5 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
+import { Routes, Route, useNavigate } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
@@ -7,26 +8,37 @@ import OnboardingPage from './pages/OnboardingPage';
 import VoiceAssistantPage from './pages/VoiceAssistantPage';
 import MyLandPage from './pages/MyLandPage';
 import SavedPlansPage from './pages/SavedPlansPage';
+import ResultsPage from './pages/ResultsPage';
 import BottomNav from './components/BottomNav';
 import TopNav from './components/TopNav';
 import InstallBanner from './components/InstallBanner';
+import PrimaryPlanBanner from './components/PrimaryPlanBanner';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { LanguageProvider, useLanguage } from './context/LanguageContext';
+import { PrimaryPlanProvider } from './context/PrimaryPlanContext';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import './App.css';
 
 // Pages that show persistent navigation (bottom on mobile, top on desktop)
 const NAV_PAGES = ['home', 'my-land', 'assistant', 'requests', 'profile'];
 
+// Tab order for slide direction detection
+const TAB_ORDER = ['home', 'my-land', 'assistant', 'requests', 'profile'];
+
 function AppInner() {
   // ⚠️ ALL HOOKS MUST BE CALLED AT THE TOP, BEFORE ANY CONDITIONAL LOGIC
   const { isLoggedIn, profile, isGuest } = useAuth();
   const { language, setLanguage } = useLanguage();
+  const navigate = useNavigate();
   const [planData,  setPlanData]  = useLocalStorage('ck_planData', null);
   const [farmData,  setFarmData]  = useLocalStorage('ck_farmData', null);
   const [farmImage, setFarmImage] = useLocalStorage('ck_farmImage', null);
+  
+  // In-memory state for same-session reports (planner → results page)
+  const [sessionReport, setSessionReport] = useState(null);
 
   const [page, setPage] = useState('home');
+  const [slideDir, setSlideDir] = useState('none'); // 'left' | 'right' | 'none'
   const [showLoginGate, setShowLoginGate] = useState(false);
   // Track whether onboarding has been dismissed this session
   const [onboardingDone, setOnboardingDone] = useLocalStorage('ck_onboarding_done', false);
@@ -37,24 +49,19 @@ function AppInner() {
   // Tracks whether the assistant mic is currently active (for BottomNav hero highlight)
   const [micActive, setMicActive] = useState(false);
 
-  // Unauthenticated flow
-  if (!isLoggedIn) {
-    if (showLoginGate) {
-      return <LoginPage onBack={() => setShowLoginGate(false)} />;
-    }
-    return <LandingPage onStart={() => setShowLoginGate(true)} language={language} />;
-  }
-
-  // Show onboarding if profile has no name yet (first-time user) — guests skip this
-  const needsOnboarding = !onboardingDone && !isGuest && (!profile?.given_name);
-  if (needsOnboarding) {
-    return <OnboardingPage onComplete={() => setOnboardingDone(true)} />;
-  }
-
   /* ── Navigation helpers ── */
-  const goTo = (p) => setPage(p);
+  const goTo = useCallback((p) => {
+    const fromIdx = TAB_ORDER.indexOf(page);
+    const toIdx   = TAB_ORDER.indexOf(p);
+    if (fromIdx !== -1 && toIdx !== -1 && fromIdx !== toIdx) {
+      setSlideDir(toIdx > fromIdx ? 'left' : 'right');
+    } else {
+      setSlideDir('none');
+    }
+    setPage(p);
+  }, [page]);
 
-  const handlePlanComplete = (plan, farm, image) => {
+  const handlePlanComplete = useCallback((plan, farm, image) => {
     setPlanData(plan);
     setFarmData(farm);
     if (image && image.startsWith('blob:')) {
@@ -74,7 +81,21 @@ function AppInner() {
     }
     if (farm?.language) setLanguage(farm.language);
     setPage('my-land'); // Route to My Land to show the rich plan view
-  };
+  }, [setPlanData, setFarmData, setFarmImage, setLanguage]);
+
+  // Unauthenticated flow
+  if (!isLoggedIn) {
+    if (showLoginGate) {
+      return <LoginPage onBack={() => setShowLoginGate(false)} />;
+    }
+    return <LandingPage onStart={() => setShowLoginGate(true)} language={language} />;
+  }
+
+  // Show onboarding if profile has no name yet (first-time user) — guests skip this
+  const needsOnboarding = !onboardingDone && !isGuest && (!profile?.given_name);
+  if (needsOnboarding) {
+    return <OnboardingPage onComplete={() => setOnboardingDone(true)} />;
+  }
 
   const showNav = NAV_PAGES.includes(page);
 
@@ -103,29 +124,40 @@ function AppInner() {
         <TopNav active={activeNav} onNav={handleNavTab} />
       )}
 
-      {/* ── Pages with persistent nav ── */}
+      {/* ── Primary Plan Banner — shown on all main nav pages ── */}
+      {showNav && (
+        <PrimaryPlanBanner onViewPlan={() => goTo('my-land')} />
+      )}
+
+      {/* ── Pages with persistent nav, wrapped in slide-transition container ── */}
+      <div
+        key={page}
+        className={`app__page-slide${slideDir !== 'none' ? ` app__page-slide--${slideDir}` : ''}`}
+        onAnimationEnd={() => setSlideDir('none')}
+      >
+
       {page === 'home' && (
         <HomePage
           planData={planData}
           farmImage={farmImage}
-          onGoToMyLand={() => setPage('my-land')}
-          onSpeakToAI={() => setPage('assistant')}
-          onViewDetails={() => setPage('my-land')}
+          onGoToMyLand={() => goTo('my-land')}
+          onSpeakToAI={() => goTo('assistant')}
+          onViewDetails={() => goTo('my-land')}
         />
       )}
 
       {page === 'profile' && (
         <ProfilePage
           onGoToSavedPlans={() => setPage('saved-plans')}
-          onGoToMyLand={() => setPage('my-land')}
-          onGoToOnboarding={() => { setOnboardingDone(false); setPage('home'); }}
+          onGoToMyLand={() => goTo('my-land')}
+          onGoToOnboarding={() => { setOnboardingDone(false); goTo('home'); }}
         />
       )}
 
       {page === 'assistant' && (
         <VoiceAssistantPage
           language={language}
-          onBack={() => setPage('home')}
+          onBack={() => goTo('home')}
           onRegisterMicCallback={(fn) => { assistantMicRef.current = fn; }}
           onListeningChange={setMicActive}
         />
@@ -139,7 +171,7 @@ function AppInner() {
           onPlanReady={(plan, farm, image) => {
             handlePlanComplete(plan, farm, image);
           }}
-          onBack={() => setPage('home')}
+          onBack={() => goTo('home')}
         />
       )}
 
@@ -159,10 +191,12 @@ function AppInner() {
           onLoadPlan={(plan, farm) => {
             setPlanData(plan);
             setFarmData(farm);
-            setPage('my-land');
+            goTo('my-land');
           }}
         />
       )}
+
+      </div>{/* end app__page-slide */}
 
       {/* ── Mobile Bottom Nav (hidden on desktop via CSS) ── */}
       {showNav && (
@@ -182,7 +216,9 @@ export default function App() {
   return (
     <AuthProvider>
       <LanguageProvider>
-        <AppInner />
+        <PrimaryPlanProvider>
+          <AppInner />
+        </PrimaryPlanProvider>
       </LanguageProvider>
     </AuthProvider>
   );

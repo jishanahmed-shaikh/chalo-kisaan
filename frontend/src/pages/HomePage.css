@@ -61,6 +61,69 @@
 .home__greeting-name { color: #a8f0b0; }
 .home__header--scrolled .home__greeting-name { color: var(--g-500); }
 
+/* Header right group (bell + avatar) */
+.home__header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Notification button */
+.home__notif-btn {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s ease;
+  backdrop-filter: blur(8px);
+}
+.home__notif-btn:active { transform: scale(0.92); }
+.home__header--scrolled .home__notif-btn {
+  background: rgba(0,0,0,0.05);
+  color: var(--ink-2);
+}
+.home__notif-dot {
+  position: absolute;
+  top: 5px; right: 5px;
+  width: 8px; height: 8px;
+  background: #fbbf24;
+  border: 1.5px solid #fff;
+  border-radius: 50%;
+}
+
+/* Plan chip below greeting */
+.home__plan-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  padding: 3px 8px;
+  background: rgba(255,255,255,0.18);
+  backdrop-filter: blur(6px);
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #e8f5e9;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: background 0.25s;
+}
+.home__header--scrolled .home__plan-chip {
+  background: rgba(76,175,80,0.12);
+  color: var(--g-700);
+}
+
 .home__avatar {
   position: relative;
   width: 42px;
@@ -784,7 +847,7 @@
 }
 
 /* ── Bottom Padding ── */
-.home__bottom-pad { height: 32px; }
+.home__bottom-pad { height: 100px; }
 
 /* ── Desktop ── */
 @media (min-width: 768px) {

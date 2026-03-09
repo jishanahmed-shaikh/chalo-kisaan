@@ -1,0 +1,218 @@
+/* PrimaryPlanBanner.css */
+
+.ppb {
+  position: sticky;
+  top: 0;
+  z-index: 120;
+  background: linear-gradient(135deg, #0d3b1f 0%, #1a5c2e 100%);
+  border-bottom: 1.5px solid rgba(74, 222, 128, 0.25);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+  /* Slide-in animation on mount */
+  animation: ppb-slide-in 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes ppb-slide-in {
+  from { transform: translateY(-100%); opacity: 0; }
+  to   { transform: translateY(0);     opacity: 1; }
+}
+
+/* ── Collapsed row ── */
+.ppb__row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px 7px 10px;
+  cursor: pointer;
+  user-select: none;
+  min-height: 38px;
+}
+
+.ppb__star-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  color: #fbbf24;
+  filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.6));
+}
+
+.ppb__main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+}
+
+.ppb__service {
+  font-size: 12px;
+  font-weight: 700;
+  color: #d1fae5;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: 0.01em;
+}
+
+.ppb__location {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 10.5px;
+  color: rgba(167, 243, 208, 0.7);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100px;
+}
+
+.ppb__meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.ppb__income {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #86efac;
+  white-space: nowrap;
+}
+
+.ppb__score {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 20px;
+  letter-spacing: 0.02em;
+}
+
+.ppb__score[data-level='high'] {
+  background: rgba(74, 222, 128, 0.2);
+  color: #4ade80;
+  border: 1px solid rgba(74, 222, 128, 0.3);
+}
+
+.ppb__score[data-level='mid'] {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.ppb__score[data-level='low'] {
+  background: rgba(248, 113, 113, 0.2);
+  color: #f87171;
+  border: 1px solid rgba(248, 113, 113, 0.3);
+}
+
+.ppb__toggle,
+.ppb__clear {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+  color: rgba(167, 243, 208, 0.7);
+}
+
+.ppb__toggle:hover { background: rgba(255,255,255,0.08); color: #d1fae5; }
+.ppb__clear        { color: rgba(167, 243, 208, 0.5); }
+.ppb__clear:hover  { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+
+/* ── Expanded details ── */
+.ppb__details {
+  padding: 0 12px 10px 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  animation: ppb-expand 0.2s ease both;
+  border-top: 1px solid rgba(74, 222, 128, 0.12);
+  padding-top: 8px;
+}
+
+@keyframes ppb-expand {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.ppb__detail-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.ppb__detail-item--full {
+  width: 100%;
+}
+
+.ppb__detail-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(167, 243, 208, 0.5);
+  font-weight: 600;
+}
+
+.ppb__detail-val {
+  font-size: 11px;
+  font-weight: 600;
+  color: #d1fae5;
+}
+
+.ppb__view-btn {
+  margin-top: 4px;
+  background: rgba(74, 222, 128, 0.15);
+  border: 1px solid rgba(74, 222, 128, 0.3);
+  color: #86efac;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  width: 100%;
+  text-align: center;
+  margin-top: 2px;
+}
+
+.ppb__view-btn:hover {
+  background: rgba(74, 222, 128, 0.25);
+  transform: translateY(-1px);
+}
+
+.ppb__hint {
+  width: 100%;
+  margin: 0;
+  font-size: 9.5px;
+  color: rgba(167, 243, 208, 0.4);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-top: 2px;
+}
+
+/* ── Desktop ── */
+@media (min-width: 768px) {
+  .ppb__row {
+    padding: 8px 16px;
+  }
+
+  .ppb__service {
+    font-size: 13px;
+  }
+
+  .ppb__location {
+    max-width: 160px;
+  }
+}

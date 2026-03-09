@@ -10,6 +10,123 @@
   padding-bottom: 80px;
 }
 
+/* ── Flip Card Component ── */
+.flip-card {
+  width: 100%;
+  max-width: 500px;
+  height: 400px;
+  cursor: pointer;
+  perspective: 1000px;
+  margin: 0 auto;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flip-card__inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+  border-radius: var(--r-md);
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.flip-card--flipped .flip-card__inner {
+  transform: rotateY(180deg);
+}
+
+.flip-card__face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  -webkit-backface-visibility: hidden; /* Safari */
+  backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--paper-fold);
+  border: 1.5px solid var(--border);
+}
+
+.flip-card__face--front {
+  color: var(--ink);
+  z-index: 2;
+}
+
+.flip-card__face--back {
+  color: var(--ink);
+  transform: rotateY(180deg);
+  background: var(--paper-dark);
+}
+
+.flip-card__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.flip-card__badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  z-index: 10;
+}
+
+.flip-card__badge--before {
+  background: rgba(76, 175, 80, 0.85);
+}
+
+.flip-card__badge--after {
+  background: rgba(255, 152, 0, 0.85);
+}
+
+.flip-card__caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+  color: #fff;
+  padding: 16px 12px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+  z-index: 5;
+}
+
+.flip-card__hint {
+  position: absolute;
+  bottom: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  color: var(--ink-faint);
+  font-style: italic;
+  animation: bounce-hint 2s infinite;
+}
+
+@keyframes bounce-hint {
+  0%, 100% { opacity: 0.6; transform: translateX(-50%) translateY(0); }
+  50% { opacity: 1; transform: translateX(-50%) translateY(-3px); }
+}
+
 /* ── Header ── */
 .results__header {
   background: var(--ink);
@@ -713,6 +830,11 @@
   .results__seasons      { grid-template-columns: 1fr; }
   .results__action-bar   { padding: 10px 16px; }
   .results__header       { padding: 0 14px; height: 52px; }
+  
+  .flip-card {
+    height: 320px;
+    max-width: 100%;
+  }
 }
 
 /* ── Desktop ── */

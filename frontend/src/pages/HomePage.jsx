@@ -3,7 +3,7 @@ import {
   IconCamera, IconMicrophone, IconChevronRight,
   IconCurrencyRupee, IconTool, IconBulb, IconArrowRight,
   IconSparkles, IconLeaf, IconX, IconSun, IconDroplet,
-  IconTrendingUp, IconMapPin,
+  IconTrendingUp, IconMapPin, IconBell, IconMoon,
 } from '@tabler/icons-react';
 import { useLanguage } from '../context/LanguageContext';
 import logoPrimary from '../assets/logo-primary.png';
@@ -296,6 +296,10 @@ export default function HomePage({ planData, onUploadPhoto, onSpeakToAI, onViewD
     weekday: 'long', day: 'numeric', month: 'long',
   });
 
+  const hour = new Date().getHours();
+  const timeOfDay = hour < 6 ? 'night' : hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : hour < 20 ? 'evening' : 'night';
+  const TimeIcon = timeOfDay === 'morning' ? IconSun : timeOfDay === 'night' ? IconMoon : IconSun;
+
   const hasPlan = Boolean(planData);
   const score = planData?.suitabilityScore ?? planData?.suitability_score ?? null;
   const monthly = planData?.monthlyRevenueEstimate || planData?.revenue_projections?.monthly_potential || null;
@@ -318,15 +322,30 @@ export default function HomePage({ planData, onUploadPhoto, onSpeakToAI, onViewD
       {/* ── Floating Header ── */}
       <header className={`home__header ${scrolled ? 'home__header--scrolled' : ''}`}>
         <div className="home__header-left">
-          <div className="home__date">{today}</div>
+          <div className="home__date">
+            <TimeIcon size={10} strokeWidth={2.5} style={{ verticalAlign: 'middle', marginRight: 4 }} />
+            {today}
+          </div>
           <h1 className="home__greeting">
             {t('home_greeting')}, <span className="home__greeting-name">{t('common_kisan')}</span>
           </h1>
+          {hasPlan && serviceName && (
+            <div className="home__plan-chip">
+              <IconLeaf size={10} strokeWidth={2.5} />
+              {serviceName}
+            </div>
+          )}
         </div>
-        <button className="home__avatar" aria-label="Profile">
-          <img src={logoPrimary} alt="profile" />
-          <span className="home__avatar-dot" />
-        </button>
+        <div className="home__header-right">
+          <button className="home__notif-btn" aria-label="Notifications">
+            <IconBell size={18} strokeWidth={1.8} />
+            {hasPlan && <span className="home__notif-dot" />}
+          </button>
+          <button className="home__avatar" aria-label="Profile">
+            <img src={logoPrimary} alt="profile" />
+            <span className="home__avatar-dot" />
+          </button>
+        </div>
       </header>
 
       <div className="home__scroll" ref={scrollRef}>

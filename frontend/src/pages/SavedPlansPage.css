@@ -249,7 +249,66 @@
 .sp__card-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Primary toggle button */
+.sp__btn-primary-toggle {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(251, 191, 36, 0.4);
+  background: rgba(251, 191, 36, 0.06);
+  color: #b45309;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.sp__btn-primary-toggle:hover {
+  background: rgba(251, 191, 36, 0.15);
+  border-color: rgba(251, 191, 36, 0.7);
+}
+
+.sp__btn-primary-toggle--active {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border-color: #f59e0b;
+  color: #92400e;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.25);
+}
+
+.sp__btn-primary-toggle--active:hover {
+  background: linear-gradient(135deg, #fde68a, #fcd34d);
+}
+
+/* Primary card highlight */
+.sp__card--primary {
+  border-color: rgba(245, 158, 11, 0.5) !important;
+  background: linear-gradient(135deg, rgba(255, 251, 235, 0.8) 0%, rgba(255, 255, 255, 1) 100%);
+  box-shadow: 0 4px 20px rgba(245, 158, 11, 0.12), 0 0 0 2px rgba(245, 158, 11, 0.15);
+}
+
+.sp__primary-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #92400e;
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border-bottom: 1px solid rgba(245, 158, 11, 0.2);
+  padding: 5px 14px;
+  border-radius: 12px 12px 0 0;
+  margin: -14px -14px 10px -14px;
 }
 
 .sp__btn-delete {

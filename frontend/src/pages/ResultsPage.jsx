@@ -59,6 +59,73 @@ const RevBar = React.memo(function RevBar({ label, value, max }) {
   );
 });
 
+// Flip Card Component for Before/After visualization
+const FlipCard = React.memo(function FlipCard({ front, back }) {
+  const [isFlipped, setIsFlipped] = useState(false);
+  
+  return (
+    <div 
+      className={`flip-card ${isFlipped ? 'flip-card--flipped' : ''}`}
+      onClick={() => setIsFlipped(!isFlipped)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setIsFlipped(!isFlipped); }}
+    >
+      <div className="flip-card__inner">
+        {/* Front side */}
+        <div className="flip-card__face flip-card__face--front">
+          {front.image ? (
+            <>
+              <span className="flip-card__badge flip-card__badge--before">{front.badge}</span>
+              <img src={front.image} alt={front.caption} className="flip-card__img" loading="lazy" />
+              <div className="flip-card__caption">{front.caption}</div>
+            </>
+          ) : (
+            <div style={{ padding: 20, textAlign: 'center', color: 'var(--ink-faint)' }}>
+              <p>Upload a farm photo in the planner to see your current farm</p>
+            </div>
+          )}
+        </div>
+        
+        {/* Back side */}
+        <div className="flip-card__face flip-card__face--back">
+          <span className="flip-card__badge flip-card__badge--after">{back.badge}</span>
+          {back.loading ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 12 }}>
+              <span className="spinner spinner--dark" />
+              <span style={{ fontSize: 13, fontWeight: 500 }}>AI is transforming your farm...</span>
+              <span style={{ fontSize: 11, color: 'var(--ink-faint)' }}>This may take 10-15 seconds</span>
+            </div>
+          ) : back.image ? (
+            <>
+              <img src={back.image} alt="Farm after transformation" className="flip-card__img" loading="lazy" />
+            </>
+          ) : back.illustration ? (
+            <div className="results__farm-illustration" style={{ height: '100%', position: 'relative' }}>
+              <div className="results__farm-sky" />
+              <div className="results__farm-hills" />
+              <div className="results__farm-land" />
+              <div className="results__farm-path" />
+              {[10,22,38,60,78].map((l,i) => (
+                <div key={i} className="results__farm-tree" style={{ left:`${l}%`, height:`${44+i%3*14}px`, bottom:`${48+(i%2)*3}%` }} />
+              ))}
+              <div className="results__farm-hut results__farm-hut--main" />
+              <div className="results__farm-hut results__farm-hut--small" />
+              <div className="results__farm-tent" />
+            </div>
+          ) : (
+            <div style={{ padding: 20, textAlign: 'center', color: 'var(--ink-faint)' }}>
+              <p>Select services above and click "Visualize My Farm" to see the transformation</p>
+            </div>
+          )}
+          <div className="flip-card__caption">{back.caption}</div>
+        </div>
+      </div>
+      <div className="flip-card__hint">Click to flip</div>
+    </div>
+  );
+});
+
 const TABS = [
   { key:"overview",      label:"Overview",   Icon: IconMap },
   { key:"plan",          label:"Setup Plan", Icon: IconChecklist },
@@ -472,63 +539,44 @@ export default function ResultsPage({ sessionReport, language = "hindi", onBack,
               </div>
             </div>
 
-            {/* Before & After Display */}
+            {/* Before & After Display — Flip Card */}
             <div className="rc">
               <div className="rc__head"><IconEye size={16} stroke={2} /><span className="rc__title">Before &amp; After — Your Farm Transformation</span></div>
-              <div className="rc__body" style={{padding:0}}>
-                <div className="results__viz-panels">
-                  {farmImage && (
-                    <div className="results__viz-panel">
-                      <span className="results__viz-badge results__viz-badge--before">Before</span>
-                      <img src={farmImage} alt="Current farm" className="results__viz-img" loading="lazy" />
-                      <div className="results__viz-cap">Your farm today</div>
-                    </div>
-                  )}
-                  <div className="results__viz-panel" style={{ gridColumn: farmImage ? "auto" : "1/-1" }}>
-                    <span className="results__viz-badge results__viz-badge--after">After</span>
-                    {aiImageLoading ? (
-                      <div className="results__viz-loading">
-                        <span className="spinner spinner--dark" />
-                        <span>AI is transforming your farm...</span>
-                        <span style={{fontSize:11, color:"var(--ink-faint)"}}>This may take 10-15 seconds</span>
-                      </div>
-                    ) : aiImage ? (
-                      <img src={aiImage} alt="AI-generated farm transformation" className="results__viz-img" loading="lazy" />
-                    ) : (
-                      <div className="results__farm-illustration">
-                        <div className="results__farm-sky" />
-                        <div className="results__farm-hills" />
-                        <div className="results__farm-land" />
-                        <div className="results__farm-path" />
-                        {[10,22,38,60,78].map((l,i) => (
-                          <div key={i} className="results__farm-tree" style={{ left:`${l}%`, height:`${44+i%3*14}px`, bottom:`${48+(i%2)*3}%` }} />
-                        ))}
-                        <div className="results__farm-hut results__farm-hut--main" />
-                        <div className="results__farm-hut results__farm-hut--small" />
-                        <div className="results__farm-tent" />
-                      </div>
-                    )}
-                    <div className="results__viz-cap">
-                      {aiImage
-                        ? `${planData.recommendedService} — AI Generated`
-                        : `${planData.recommendedService} — Select services above & generate`}
-                    </div>
-                  </div>
-                </div>
-                {aiImageError && (
-                  <div className="results__viz-error">
-                    <IconAlertTriangle size={14} stroke={2} /> {aiImageError}
-                  </div>
-                )}
-                {aiImage && (
-                  <div style={{padding:"12px 16px", display:"flex", gap:10}}>
-                    <button className="results__copy-btn" onClick={handleGenerateAiImage} disabled={aiImageLoading}>
-                      <IconRefresh size={14} stroke={2} /> Regenerate
-                    </button>
-                  </div>
-                )}
+              <div className="rc__body" style={{padding:0, display:"flex", flexDirection:"column", alignItems:"center"}}>
+                <p style={{fontSize:13, color:"var(--ink-faint)", marginBottom:16, textAlign:"center"}}>👆 Click the card to flip between Before and After</p>
+                <FlipCard 
+                  front={{
+                    badge: "Before",
+                    image: farmImage,
+                    caption: "Your farm today",
+                    loading: false
+                  }}
+                  back={{
+                    badge: "After",
+                    image: aiImage,
+                    caption: aiImage ? `${planData.recommendedService} — AI Generated` : `${planData.recommendedService} — Select services above & generate`,
+                    loading: aiImageLoading,
+                    illustration: !aiImage && !aiImageLoading
+                  }}
+                />
               </div>
             </div>
+            {aiImageError && (
+              <div className="rc">
+                <div className="results__viz-error">
+                  <IconAlertTriangle size={14} stroke={2} /> {aiImageError}
+                </div>
+              </div>
+            )}
+            {aiImage && (
+              <div className="rc">
+                <div style={{display:"flex", gap:10}}>
+                  <button className="results__copy-btn" onClick={handleGenerateAiImage} disabled={aiImageLoading}>
+                    <IconRefresh size={14} stroke={2} /> Regenerate
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Text description cards */}
             {viz && (

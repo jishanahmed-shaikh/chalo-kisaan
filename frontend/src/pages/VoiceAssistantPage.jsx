@@ -19,15 +19,19 @@ import React, {
 import {
   IconArrowLeft, IconMicrophone,
   IconSend, IconX, IconVolume, IconVolumeOff,
-  IconLoader2, IconSparkles, IconRefresh,
+  IconLoader2, IconRefresh,
   IconLeaf, IconInfoCircle, IconCheck, IconMapPin, IconAlertTriangle,
+  IconStar, IconPlus,
 } from '@tabler/icons-react';
-import { useVoiceInput }   from '../hooks/useVoiceInput';
-import { useAuth }         from '../context/AuthContext';
-import { useLanguage }     from '../context/LanguageContext';
-import { assistantChat }   from '../utils/api';
-import { renderMarkdown }  from '../utils/markdown';
+import { useAwsTranscribe }  from '../hooks/useAwsTranscribe';
+import { useAuth }           from '../context/AuthContext';
+import { useLanguage }       from '../context/LanguageContext';
+import { usePrimaryPlan }    from '../context/PrimaryPlanContext';
+import { assistantChat }     from '../utils/api';
+import { renderMarkdown }    from '../utils/markdown';
+import { getResponseLanguage } from '../utils/detectLanguage';
 import logoPrimary from '../assets/logo-primary.png';
+import ckAgent from '../assets/ck-agent.png';
 import './VoiceAssistantPage.css';
 
 /* ─── Language helpers ─────────────────────────────────────────────────────── */
@@ -102,6 +106,20 @@ const HINTS = {
   gujarati: 'તમારો પ્રશ્ન બોલો અથવા ટાઈપ કરો…',
 };
 
+/* ─── Chat persistence ─────────────────────────────────────────────────────── */
+const CHAT_KEY     = 'chalokisaan_chat_history';
+const MAX_STORED   = 60;
+
+function loadChat()  {
+  try { const r = localStorage.getItem(CHAT_KEY); return r ? JSON.parse(r) : []; }
+  catch { return []; }
+}
+function saveChat(msgs) {
+  try { localStorage.setItem(CHAT_KEY, JSON.stringify(msgs.filter(m => !m.streaming).slice(-MAX_STORED))); }
+  catch { /* full */ }
+}
+function clearChat() { try { localStorage.removeItem(CHAT_KEY); } catch { /* ignore */ } }
+
 /* ─── Message helpers ──────────────────────────────────────────────────────── */
 let _msgId = 0;
 const mkMsg = (role, text, extra = {}) => ({
@@ -124,17 +142,22 @@ function WaveformBars({ active, bars = 9 }) {
 }
 
 /* ─── Pulsing mic ring ─────────────────────────────────────────────────────── */
-function PulseMic({ listening, onClick }) {
+function PulseMic({ listening, transcribing, onClick }) {
   return (
     <button
-      className={`va__mic${listening ? ' va__mic--listening' : ''}`}
+      className={`va__mic${listening ? ' va__mic--listening' : ''}${transcribing ? ' va__mic--transcribing' : ''}`}
       onClick={onClick}
-      aria-label={listening ? 'Stop listening' : 'Start listening'}
+      disabled={transcribing}
+      aria-label={transcribing ? 'Processing...' : listening ? 'Stop listening' : 'Start listening'}
     >
       <span className="va__mic-ring va__mic-ring--1" />
       <span className="va__mic-ring va__mic-ring--2" />
       <span className="va__mic-inner">
-        <IconMicrophone size={28} strokeWidth={1.8} />
+        {transcribing ? (
+          <span className="va__mic-spinner" />
+        ) : (
+          <IconMicrophone size={28} strokeWidth={1.8} />
+        )}
       </span>
     </button>
   );
@@ -147,12 +170,16 @@ function ChatBubble({ msg, onRetry }) {
     <div className={`va__bubble va__bubble--${msg.role}${msg.streaming ? ' va__bubble--streaming' : ''}`}>
       {isAi && (
         <div className="va__bubble-avatar">
-          <IconSparkles size={14} strokeWidth={2} />
+          <img src={ckAgent} alt="Chalo Kisaan AI" className="va__bubble-avatar-img" />
         </div>
       )}
       <div className="va__bubble-body">
         <div className={`va__bubble-text${msg.streaming ? ' va__bubble-text--streaming' : ''}`}>
-          {renderMarkdown(msg.text || '')}
+          {msg.streaming && msg.text === '' ? (
+            <span className="va__responding-label">Responding...</span>
+          ) : (
+            renderMarkdown(msg.text || '')
+          )}
         </div>
         {msg.streaming && (
           <span className="va__bubble-cursor" aria-hidden>▌</span>
@@ -171,19 +198,20 @@ function ChatBubble({ msg, onRetry }) {
 export default function VoiceAssistantPage({ onBack, language: initLang, onRegisterMicCallback, onListeningChange }) {
   const { authHeader, profile } = useAuth();
   const { language: globalLang, setLanguage: setGlobalLang, t } = useLanguage();
+  const { primaryPlan } = usePrimaryPlan();
 
   /* language toggle — sync with global context */
   const [lang, setLang] = useState(initLang || globalLang);
 
-  /* chat history */
-  const [msgs, setMsgs] = useState([]);
+  /* chat history — restored from localStorage */
+  const [msgs, setMsgs] = useState(() => loadChat());
 
   /* current transcribed query */
   const [query,  setQuery]    = useState('');
   const [typing, setTyping]   = useState('');
 
   /* UI state */
-  const [phase, setPhase]     = useState('idle');  // idle | listening | thinking | speaking
+  const [phase, setPhase]     = useState('idle');  // idle | listening | transcribing | thinking | speaking
   const [ttsOn, setTtsOn]     = useState(true);
   const [showLangMenu, setShowLangMenu] = useState(false);
 
@@ -197,11 +225,11 @@ export default function VoiceAssistantPage({ onBack, language: initLang, onRegis
   const prevListeningRef = useRef(false);
   const sendQueryRef     = useRef(null);  // always holds latest sendQuery
 
-  /* Voice hook (browser Web Speech API) */
+  /* Voice hook (AWS Transcribe via backend) */
   const {
     isListening, transcript, interimTranscript,
-    isSupported, startListening, stopListening, resetTranscript, error, networkUnavailable,
-  } = useVoiceInput(lang);
+    isSupported, startListening, stopListening, resetTranscript, error, networkUnavailable, isTranscribing,
+  } = useAwsTranscribe(lang);
 
   /* ── Auto-switch to text input on network error ──────────────────────────── */
   useEffect(() => {
@@ -214,6 +242,13 @@ export default function VoiceAssistantPage({ onBack, language: initLang, onRegis
     }
   }, [networkUnavailable]);
 
+  /* ── Show transcribing animation when backend processes audio ───────────── */
+  useEffect(() => {
+    if (isTranscribing) {
+      setPhase('transcribing');
+    }
+  }, [isTranscribing]);
+
   /* ── Auto-scroll ───────────────────────────────────────────────────────── */
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -224,15 +259,28 @@ export default function VoiceAssistantPage({ onBack, language: initLang, onRegis
     if (transcript) setQuery(transcript);
   }, [transcript]);
 
-  /* ── Welcome message on mount ────────────────────────────────────────────── */
+  /* ── Persist chat to localStorage whenever msgs change ─────────────────── */
+  useEffect(() => { saveChat(msgs); }, [msgs]);
+
+  /* ── Welcome message on mount (skip if history exists) ──────────────────── */
   useEffect(() => {
+    if (msgs.length > 0) return;   // restored history — no welcome needed
     const name = profile?.given_name || '';
+    const hasPlan = !!primaryPlan;
+    const planService = primaryPlan?.planData?.recommendedService || primaryPlan?.service || '';
+    const planHint = {
+      hindi:    hasPlan ? ` मैंने आपकी "${planService}" योजना लोड कर ली है।` : '',
+      english:  hasPlan ? ` I've loaded your "${planService}" plan.` : '',
+      marathi:  hasPlan ? ` मी तुमची "${planService}" योजना लोड केली आहे.` : '',
+      punjabi:  hasPlan ? ` ਮੈਂ ਤੁਹਾਡੀ "${planService}" ਯੋਜਨਾ ਲੋਡ ਕਰ ਲਈ ਹੈ।` : '',
+      gujarati: hasPlan ? ` મેં તમારી "${planService}" યોજના લોડ કરી છે.` : '',
+    };
     const welcome = {
-      hindi:    `नमस्ते${name ? ` ${name} जी` : ''}! मैं आपका AI कृषि-सहायक हूँ। आपके खेत के बारे में कुछ भी पूछें — आय, योजनाएँ, मंडी, सरकारी सहायता — मैं आपकी मदद के लिए हूँ।`,
-      english:  `Namaste${name ? ` ${name}` : ''}! I'm your AI farming assistant. Ask me anything — income potential, govt schemes, nearby markets, or how to start agritourism.`,
-      marathi:  `नमस्कार${name ? ` ${name}` : ''}! मी तुमचा AI शेती-सहायक आहे. तुमच्या शेताबद्दल काहीही विचारा — उत्पन्न, योजना, बाजारपेठ, सरकारी मदत.`,
-      punjabi:  `ਸਤ ਸ੍ਰੀ ਅਕਾਲ${name ? ` ${name} ਜੀ` : ''}! ਮੈਂ ਤੁਹਾਡਾ AI ਖੇਤੀ-ਸਹਾਇਕ ਹਾਂ। ਆਪਣੇ ਖੇਤ ਬਾਰੇ ਕੁਝ ਵੀ ਪੁੱਛੋ।`,
-      gujarati: `નમસ્તે${name ? ` ${name}` : ''}! હું તમારો AI ખેતી-સહાયક છું. તમારા ખેતર વિશે કંઈ પણ પૂછો.`,
+      hindi:    `नमस्ते${name ? ` ${name} जी` : ''}! मैं आपका AI कृषि-सहायक हूँ।${planHint.hindi} आपके खेत के बारे में कुछ भी पूछें — आय, योजनाएँ, मंडी, सरकारी सहायता।`,
+      english:  `Namaste${name ? ` ${name}` : ''}! I'm your AI farming assistant.${planHint.english} Ask me anything about income, govt schemes, nearby markets, or agritourism.`,
+      marathi:  `नमस्कार${name ? ` ${name}` : ''}! मी तुमचा AI शेती-सहायक आहे.${planHint.marathi} काहीही विचारा — उत्पन्न, योजना, बाजारपेठ.`,
+      punjabi:  `ਸਤ ਸ੍ਰੀ ਅਕਾਲ${name ? ` ${name} ਜੀ` : ''}! ਮੈਂ ਤੁਹਾਡਾ AI ਖੇਤੀ-ਸਹਾਇਕ ਹਾਂ।${planHint.punjabi} ਕੁਝ ਵੀ ਪੁੱਛੋ।`,
+      gujarati: `નમસ્તે${name ? ` ${name}` : ''}! હું તમારો AI ખેતી-સહાયક છું.${planHint.gujarati} કંઈ પણ પૂછો.`,
     };
     setMsgs([mkMsg('ai', welcome[lang] || welcome.hindi)]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -304,6 +352,9 @@ export default function VoiceAssistantPage({ onBack, language: initLang, onRegis
     const text = rawText.trim();
     if (!text || phase === 'thinking') return;
 
+    // Detect user's input language (if they typed/spoke in a different script)
+    const responseLanguage = getResponseLanguage(text, lang);
+
     // Add user bubble
     setMsgs(prev => [...prev, mkMsg('user', text)]);
     setQuery('');
@@ -319,15 +370,22 @@ export default function VoiceAssistantPage({ onBack, language: initLang, onRegis
 
     let fullText = '';
 
-    // Build conversation history from previous messages (for context continuity)
+    // Build conversation history — inject primary plan as system context if set
     const history = msgs
       .filter(m => m.role === 'user' || m.role === 'ai')
       .map(m => ({ role: m.role, text: m.text }));
 
+    const planContext = primaryPlan
+      ? `[FARM PLAN CONTEXT]\nPrimary plan: ${primaryPlan.planData?.recommendedService || primaryPlan.service || 'Farm Plan'}\n${JSON.stringify(primaryPlan.planData || {}, null, 2).slice(0, 800)}`
+      : null;
+    const historyWithCtx = planContext
+      ? [{ role: 'system', text: planContext }, ...history]
+      : history;
+
     await assistantChat(
       text,
-      lang,
-      history,
+      responseLanguage,
+      historyWithCtx,
       /* onDelta */ (delta) => {
         fullText += delta;
         setMsgs(prev => prev.map(m =>
@@ -346,7 +404,7 @@ export default function VoiceAssistantPage({ onBack, language: initLang, onRegis
         };
         setMsgs(prev => prev.map(m =>
           m.id === aiMsgId
-            ? { ...m, text: errorMsg[lang] || errorMsg.english, streaming: false, error: true }
+            ? { ...m, text: errorMsg[responseLanguage] || errorMsg.english, streaming: false, error: true }
             : m
         ));
         setPhase('idle');
@@ -371,12 +429,32 @@ export default function VoiceAssistantPage({ onBack, language: initLang, onRegis
 
     /* Speak the reply */
     playTTS(fullText);
-  }, [phase, lang, msgs, authHeader, playTTS, resetTranscript, geoLocation]);
+  }, [phase, lang, msgs, authHeader, playTTS, resetTranscript, geoLocation, primaryPlan]);
 
   /* Keep ref always pointing at latest sendQuery */
   useEffect(() => {
     sendQueryRef.current = sendQuery;
   }, [sendQuery]);
+
+  /* ── New Chat ─────────────────────────────────────────────────────────────── */
+  const handleNewChat = useCallback(() => {
+    if (audioRef.current) { audioRef.current.pause(); audioRef.current.currentTime = 0; }
+    if (isListening) stopListening();
+    setQuery(''); setTyping(''); resetTranscript(); setPhase('idle');
+    clearChat();
+    const name = profile?.given_name || '';
+    const hasPlan = !!primaryPlan;
+    const svc = primaryPlan?.planData?.recommendedService || primaryPlan?.service || '';
+    const hint = { hindi: hasPlan ? ` "${svc}" योजना लोड है।` : '', english: hasPlan ? ` "${svc}" plan loaded.` : '', marathi: '', punjabi: '', gujarati: '' };
+    const welcome = {
+      hindi:   `नई बातचीत शुरू हो गई${name ? `, ${name} जी` : ''}!${hint.hindi} क्या पूछना है?`,
+      english: `New chat started${name ? `, ${name}` : ''}!${hint.english} What would you like to know?`,
+      marathi: `नवीन संभाषण सुरू${name ? `, ${name}` : ''}! काय विचारायचे?`,
+      punjabi: `ਨਵੀਂ ਗੱਲਬਾਤ ਸ਼ੁਰੂ${name ? `, ${name} ਜੀ` : ''}! ਕੀ ਪੁੱਛਣਾ ਹੈ?`,
+      gujarati:`નવી વાર્તાલાપ${name ? `, ${name}` : ''}! શું પૂછવું છે?`,
+    };
+    setMsgs([mkMsg('ai', welcome[lang] || welcome.english)]);
+  }, [isListening, stopListening, resetTranscript, lang, profile, primaryPlan]);
 
   /* ── Mic toggle ────────────────────────────────────────────────────────── */
   const handleMicToggle = useCallback(() => {
@@ -463,7 +541,9 @@ export default function VoiceAssistantPage({ onBack, language: initLang, onRegis
           <div>
             <div className="va__header-title">{t('assistant_title')}</div>
             <div className="va__header-sub">
-              <IconLeaf size={10} strokeWidth={2} /> {t('home_action_ai_sub')}
+              {primaryPlan
+                ? <><IconStar size={10} style={{ color: '#fbbf24' }} /> {primaryPlan.planData?.recommendedService || 'Farm Plan'}</>
+                : <><IconLeaf size={10} strokeWidth={2} /> {t('home_action_ai_sub')}</>}
             </div>
           </div>
         </div>
@@ -471,7 +551,23 @@ export default function VoiceAssistantPage({ onBack, language: initLang, onRegis
         <div className="va__header-actions">
           <button
             className="va__header-btn"
-            onClick={() => setTtsOn(p => !p)}
+            onClick={handleNewChat}
+            title="New chat"
+            aria-label="New chat"
+          >
+            <IconPlus size={18} strokeWidth={2} />
+          </button>
+          <button
+            className="va__header-btn"
+            onClick={() => {
+              setTtsOn(p => {
+                if (p) {
+                  if (audioRef.current) { audioRef.current.pause(); audioRef.current.currentTime = 0; }
+                  if (phase === 'speaking') setPhase('idle');
+                }
+                return !p;
+              });
+            }}
             aria-label={ttsOn ? 'Mute voice' : 'Unmute voice'}
             title={ttsOn ? 'Mute AI voice' : 'Unmute AI voice'}
           >
@@ -564,8 +660,8 @@ export default function VoiceAssistantPage({ onBack, language: initLang, onRegis
             </strong>
             <span>
               {lang === 'hindi'
-                ? 'Google Speech API इस नेटवर्क पर काम नहीं कर रही। नीचे टाइप करें।'
-                : 'Google Speech API is unreachable on this network. Type your question below.'}
+                ? 'AWS Transcribe इस नेटवर्क पर उपलब्ध नहीं। नीचे टाइप करें।'
+                : 'AWS Transcribe is unreachable. Type your question below.'}
             </span>
           </div>
         </div>
@@ -662,7 +758,7 @@ export default function VoiceAssistantPage({ onBack, language: initLang, onRegis
               </span>
             </div>
           ) : (
-            <PulseMic listening={isListening} onClick={handleMicToggle} />
+            <PulseMic listening={isListening} transcribing={isTranscribing} onClick={handleMicToggle} />
           )}
         </div>
       </div>

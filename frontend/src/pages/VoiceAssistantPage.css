@@ -453,6 +453,14 @@
   flex-shrink: 0;
   margin-top: 2px;
   box-shadow: var(--shadow-xs);
+  overflow: hidden;
+}
+
+.va__bubble-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
 .va__bubble-body {
@@ -465,10 +473,10 @@
 }
 
 .va__bubble--user .va__bubble-body {
-  background: var(--g-600);
-  border-color: var(--g-600);
+  background: linear-gradient(135deg, var(--g-600) 0%, var(--g-700) 100%);
+  border-color: transparent;
   color: #fff;
-  box-shadow: 0 2px 8px rgba(45,113,50,0.15);
+  box-shadow: 0 2px 8px rgba(45,113,50,0.20);
 }
 
 .va__bubble-text {
@@ -482,6 +490,14 @@
   animation: textAppearStreaming 0.15s ease-out;
 }
 
+.va__responding-label {
+  font-size: 13px;
+  color: var(--ink-2);
+  font-style: italic;
+  font-weight: 500;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
 @keyframes textAppear {
   from {
     opacity: 0;
@@ -491,6 +507,11 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
 }
 
 @keyframes textAppearStreaming {
@@ -605,7 +626,8 @@
   border-bottom-color: #fff;
 }
 
-.va__bubble--user .va__bubble-text { color: #fff; }
+.va__bubble--user .va__bubble-text,
+.va__bubble--user .va__bubble-text * { color: #ffffff !important; }
 
 .va__bubble-cursor {
   display: inline-block;
@@ -815,6 +837,34 @@
 @keyframes micPulse {
   0%   { transform: scale(1);    opacity: 0.7; }
   100% { transform: scale(1.8);  opacity: 0; }
+}
+
+/* Transcribing state — darker bg, spinner animation */
+.va__mic--transcribing {
+  background: linear-gradient(135deg, var(--g-600) 0%, var(--g-700) 100%);
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.va__mic--transcribing:hover {
+  background: linear-gradient(135deg, var(--g-600) 0%, var(--g-700) 100%);
+  transform: scale(1);
+  box-shadow: 0 4px 16px rgba(41,198,33,0.25);
+}
+
+/* Spinner animation inside mic button */
+.va__mic-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top: 2px solid #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 .va__mic--listening {

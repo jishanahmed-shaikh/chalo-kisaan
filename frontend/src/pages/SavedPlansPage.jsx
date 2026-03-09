@@ -3,10 +3,11 @@ import {
   IconArrowLeft, IconLeaf, IconMapPin, IconStar,
   IconTrash, IconCalendar, IconChevronRight,
   IconLoader2, IconCloudOff,
-  IconSeedling, IconCurrencyRupee,
+  IconSeedling, IconCurrencyRupee, IconStarFilled,
 } from '@tabler/icons-react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
+import { usePrimaryPlan } from '../context/PrimaryPlanContext';
 import { fetchSavedPlans, deleteSavedPlan } from '../utils/api';
 import './SavedPlansPage.css';
 
@@ -28,14 +29,19 @@ function formatDate(iso) {
 }
 
 /* ── single plan card ── */
-function PlanCard({ plan, onView, onDelete, deleting, t }) {
+function PlanCard({ plan, onView, onDelete, onSetPrimary, isPrimary, deleting, t }) {
   const score = plan.score ?? plan.planData?.suitabilityScore ?? 0;
   const service = plan.service || plan.planData?.recommendedService || 'Agritourism Plan';
   const income = plan.planData?.monthlyIncome ?? plan.planData?.estimatedMonthlyIncome;
   const location = plan.location || plan.farmData?.location || '—';
 
   return (
-    <div className="sp__card">
+    <div className={`sp__card${isPrimary ? ' sp__card--primary' : ''}`}>
+      {isPrimary && (
+        <div className="sp__primary-badge">
+          <IconStarFilled size={10} strokeWidth={2.5} /> Primary Plan
+        </div>
+      )}
       <div className="sp__card-head">
         <div className="sp__score-badge" data-score={score >= 70 ? 'high' : score >= 50 ? 'mid' : 'low'}>
           <IconStar size={12} strokeWidth={2.5} />
@@ -72,6 +78,17 @@ function PlanCard({ plan, onView, onDelete, deleting, t }) {
 
       <div className="sp__card-actions">
         <button
+          className={`sp__btn-primary-toggle${isPrimary ? ' sp__btn-primary-toggle--active' : ''}`}
+          onClick={() => onSetPrimary(plan)}
+          aria-label={isPrimary ? 'Remove as primary plan' : 'Set as primary plan'}
+          title={isPrimary ? 'Remove as primary' : 'Set as primary plan for AI assistant'}
+        >
+          {isPrimary
+            ? <><IconStarFilled size={14} strokeWidth={2.5} /> Primary</>
+            : <><IconStar size={14} strokeWidth={2.5} /> Set Primary</>
+          }
+        </button>
+        <button
           className="sp__btn-delete"
           onClick={() => onDelete(plan.planId)}
           disabled={deleting === plan.planId}
@@ -95,6 +112,7 @@ function PlanCard({ plan, onView, onDelete, deleting, t }) {
 export default function SavedPlansPage({ onBack, onLoadPlan }) {
   const { authHeader, isGuest, logout } = useAuth();
   const { t } = useLanguage();
+  const { primaryPlan, setPrimaryPlan } = usePrimaryPlan();
   const [plans, setPlans]     = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState(null);
@@ -131,6 +149,15 @@ export default function SavedPlansPage({ onBack, onLoadPlan }) {
 
   const handleView = (plan) => {
     onLoadPlan?.(plan.planData, plan.farmData);
+  };
+
+  const handleSetPrimary = (plan) => {
+    // Toggle: if already primary, unset it
+    if (primaryPlan?.planId === plan.planId) {
+      setPrimaryPlan(null);
+    } else {
+      setPrimaryPlan(plan);
+    }
   };
 
   return (
@@ -198,6 +225,8 @@ export default function SavedPlansPage({ onBack, onLoadPlan }) {
                 plan={plan}
                 onView={handleView}
                 onDelete={handleDelete}
+                onSetPrimary={handleSetPrimary}
+                isPrimary={primaryPlan?.planId === plan.planId}
                 deleting={deleting}
                 t={t}
               />
