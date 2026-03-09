@@ -71,7 +71,7 @@ export function PrimaryPlanProvider({ children }) {
     };
 
     fetchPrimaryPlan();
-  }, [isLoggedIn, profile?.sub]);
+  }, [isLoggedIn, profile?.sub, lastUserId]);
 
   const setPrimaryPlan = useCallback((plan) => {
     setPrimaryPlanState(plan);

@@ -6,11 +6,10 @@
  */
 import React, { useState } from 'react';
 import {
-  IconArrowLeft, IconBell, IconCalendarEvent, IconMapPin,
-  IconClock, IconUser, IconCheck, IconAlertCircle,
+  IconArrowLeft, IconBell, IconCalendarEvent,
+  IconCheck, IconAlertCircle,
   IconTrash, IconArchive,
 } from '@tabler/icons-react';
-import { useLanguage } from '../context/LanguageContext';
 import './AlertsPage.css';
 
 const DEMO_ALERTS = [
@@ -72,7 +71,6 @@ const DEMO_ALERTS = [
 ];
 
 export default function AlertsPage({ onBack }) {
-  const { t } = useLanguage();
   const [alerts, setAlerts] = useState(DEMO_ALERTS);
   const [filter, setFilter] = useState('all');
 
