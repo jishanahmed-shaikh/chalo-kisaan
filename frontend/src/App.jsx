@@ -7,6 +7,7 @@ import OnboardingPage from './pages/OnboardingPage';
 import VoiceAssistantPage from './pages/VoiceAssistantPage';
 import MyLandPage from './pages/MyLandPage';
 import SavedPlansPage from './pages/SavedPlansPage';
+import AlertsPage from './pages/AlertsPage';
 import BottomNav from './components/BottomNav';
 import TopNav from './components/TopNav';
 import InstallBanner from './components/InstallBanner';
@@ -170,13 +171,7 @@ function AppInner() {
       )}
 
       {page === 'requests' && (
-        <div className="app__placeholder">
-          <div className="app__placeholder-inner">
-            <span>🔔</span>
-            <h2>Alerts</h2>
-            <p>Booking requests and alerts coming soon.</p>
-          </div>
-        </div>
+        <AlertsPage onBack={() => goTo('home')} />
       )}
 
       {page === 'saved-plans' && (

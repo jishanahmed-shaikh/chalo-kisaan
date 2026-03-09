@@ -134,3 +134,61 @@ def delete_plan(user_id: str, plan_id: str) -> bool:
     except Exception as exc:
         logger.warning("delete_plan failed: %s", exc)
         return False
+
+
+def set_primary_plan(user_id: str, plan_id: str) -> bool:
+    """
+    Save the user's primary plan selection to DynamoDB.
+    Updates the special planId="__primary__" item for quick lookup.
+    Returns True on success, False on failure. Never raises.
+    """
+    try:
+        item = {
+            "userId":    {"S": user_id},
+            "planId":    {"S": "__primary__"},  # special marker for primary plan
+            "primaryPlanId": {"S": plan_id},
+            "updatedAt": {"S": datetime.utcnow().isoformat()},
+        }
+        _dynamo().put_item(TableName=PLANS_TABLE, Item=item)
+        logger.info("Primary plan set for user %s: %s", user_id, plan_id)
+        return True
+    except Exception as exc:
+        logger.warning("set_primary_plan failed: %s", exc)
+        return False
+
+
+def get_primary_plan_id(user_id: str) -> str | None:
+    """
+    Retrieve the user's primary plan ID from DynamoDB.
+    Returns the planId if set, None otherwise. Never raises.
+    """
+    try:
+        resp = _dynamo().get_item(
+            TableName=PLANS_TABLE,
+            Key={"userId": {"S": user_id}, "planId": {"S": "__primary__"}},
+        )
+        item = resp.get("Item", {})
+        if "primaryPlanId" in item:
+            return item["primaryPlanId"]["S"]
+        return None
+    except Exception as exc:
+        logger.warning("get_primary_plan_id failed: %s", exc)
+        return None
+
+
+def clear_primary_plan(user_id: str) -> bool:
+    """
+    Clear the user's primary plan selection from DynamoDB.
+    Returns True on success, False on failure. Never raises.
+    """
+    try:
+        _dynamo().delete_item(
+            TableName=PLANS_TABLE,
+            Key={"userId": {"S": user_id}, "planId": {"S": "__primary__"}},
+        )
+        logger.info("Primary plan cleared for user %s", user_id)
+        return True
+    except Exception as exc:
+        logger.warning("clear_primary_plan failed: %s", exc)
+        return False
+

@@ -40,11 +40,3 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region:            ap-south-1
 
-      - name: Trigger Amplify deployment
-        run: |
-          aws amplify start-job \
-            --app-id ${{ secrets.AMPLIFY_APP_ID }} \
-            --branch-name master \
-            --job-type RELEASE \
-            --region ap-south-1
-

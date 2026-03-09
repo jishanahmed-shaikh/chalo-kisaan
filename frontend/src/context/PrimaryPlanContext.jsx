@@ -4,13 +4,20 @@
  * Holds the user's "primary" farm plan — the one they want the AI assistant
  * to use as context for all conversations.
  *
- * Persisted to localStorage so it survives page refreshes.
+ * Persistence strategy:
+ * 1. localStorage for fast client-side access
+ * 2. Backend DynamoDB for persistence across devices & auth refreshes
+ * 3. Only authenticated users can access their saved plan
  */
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { useAuth } from './AuthContext';
 
 const PrimaryPlanContext = createContext(null);
 
+const API_BASE = process.env.REACT_APP_API_URL || '/api';
+
 export function PrimaryPlanProvider({ children }) {
+  const { isLoggedIn, profile } = useAuth();
   const [primaryPlan, setPrimaryPlanState] = useState(() => {
     try {
       const raw = localStorage.getItem('ck_primary_plan');
@@ -19,15 +26,101 @@ export function PrimaryPlanProvider({ children }) {
       return null;
     }
   });
+  const [lastUserId, setLastUserId] = useState(null);
+
+  // Fetch primary plan from backend when user logs in OR user ID changes
+  useEffect(() => {
+    if (!isLoggedIn) {
+      // Clear plan when logging out
+      setPrimaryPlanState(null);
+      localStorage.removeItem('ck_primary_plan');
+      setLastUserId(null);
+      return;
+    }
+
+    // Check if user ID changed (different user logged in)
+    const currentUserId = profile?.sub;
+    if (currentUserId && lastUserId && lastUserId !== currentUserId) {
+      // User changed — clear the old plan immediately
+      setPrimaryPlanState(null);
+      localStorage.removeItem('ck_primary_plan');
+    }
+    
+    setLastUserId(currentUserId);
+
+    // Fetch from backend
+    const fetchPrimaryPlan = async () => {
+      try {
+        const token = localStorage.getItem('idToken') || localStorage.getItem('cognito_token') || '';
+        if (!token) return;
+
+        const res = await fetch(`${API_BASE}/assistant/primary-plan`, {
+          headers: { 'Authorization': `Bearer ${token}` },
+        });
+
+        if (!res.ok) return;
+        const data = await res.json();
+
+        if (data.plan) {
+          setPrimaryPlanState(data.plan);
+          localStorage.setItem('ck_primary_plan', JSON.stringify(data.plan));
+        }
+      } catch (err) {
+        console.error('[PrimaryPlanContext] Failed to fetch primary plan:', err);
+      }
+    };
+
+    fetchPrimaryPlan();
+  }, [isLoggedIn, profile?.sub]);
 
   const setPrimaryPlan = useCallback((plan) => {
     setPrimaryPlanState(plan);
     if (plan) {
       localStorage.setItem('ck_primary_plan', JSON.stringify(plan));
+      
+      // Save to backend if logged in
+      if (isLoggedIn && plan.planId) {
+        const saveToDynamo = async () => {
+          try {
+            const token = localStorage.getItem('idToken') || localStorage.getItem('cognito_token') || '';
+            if (!token) return;
+
+            await fetch(`${API_BASE}/assistant/primary-plan/set`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ plan_id: plan.planId }),
+            });
+          } catch (err) {
+            console.error('[PrimaryPlanContext] Failed to save primary plan:', err);
+          }
+        };
+        saveToDynamo();
+      }
     } else {
       localStorage.removeItem('ck_primary_plan');
+      
+      // Clear from backend if logged in
+      if (isLoggedIn) {
+        const clearFromDynamo = async () => {
+          try {
+            const token = localStorage.getItem('idToken') || localStorage.getItem('cognito_token') || '';
+            if (!token) return;
+
+            await fetch(`${API_BASE}/assistant/primary-plan/clear`, {
+              method: 'POST',
+              headers: { 'Authorization': `Bearer ${token}` },
+            });
+          } catch (err) {
+            console.error('[PrimaryPlanContext] Failed to clear primary plan:', err);
+          }
+        };
+        clearFromDynamo();
+      }
     }
-  }, []);
+  }, [isLoggedIn]);
 
   const clearPrimaryPlan = useCallback(() => {
     setPrimaryPlan(null);

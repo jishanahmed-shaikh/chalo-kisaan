@@ -106,7 +106,7 @@
   background: #fff;
   border-radius: 20px;
   box-shadow: var(--shadow-xl);
-  padding: var(--sp-8) var(--sp-6) var(--sp-7);
+  padding: var(--sp-8) var(--sp-7) var(--sp-9);
   width: 100%;
   max-width: 420px;
   display: flex;
@@ -143,7 +143,7 @@
 
 /* ── Field ── */
 .onb__field {
-  margin-bottom: var(--sp-4);
+  margin-bottom: var(--sp-5);
 }
 
 .onb__label {

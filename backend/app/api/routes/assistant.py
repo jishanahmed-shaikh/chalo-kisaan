@@ -190,3 +190,65 @@ async def assistant_chat(req: AssistantChatRequest, user: AuthUser = Depends(req
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
+
+
+# ── Primary Plan Management ──────────────────────────────────────────────────
+
+class SetPrimaryPlanRequest(BaseModel):
+    plan_id: str
+
+
+@router.post("/primary-plan/set")
+async def set_primary_plan(
+    req: SetPrimaryPlanRequest,
+    user: AuthUser = Depends(require_auth),
+):
+    """
+    Save the user's selected primary plan to DynamoDB.
+    This persists across auth refreshes and prevents guest access to user plans.
+    """
+    from app.utils.dynamo import set_primary_plan
+    
+    success = set_primary_plan(user.sub, req.plan_id)
+    if success:
+        return {"success": True, "message": f"Primary plan set to {req.plan_id}"}
+    else:
+        raise HTTPException(status_code=500, detail="Failed to save primary plan")
+
+
+@router.get("/primary-plan")
+async def get_primary_plan(user: AuthUser = Depends(require_auth)):
+    """
+    Retrieve the user's primary plan ID from DynamoDB.
+    Used on app startup/auth refresh to restore the saved plan.
+    """
+    from app.utils.dynamo import get_primary_plan_id, get_plans_for_user
+    
+    primary_plan_id = get_primary_plan_id(user.sub)
+    
+    if not primary_plan_id:
+        return {"primary_plan_id": None, "plan": None}
+    
+    # Fetch the full plan data
+    plans = get_plans_for_user(user.sub)
+    plan = next((p for p in plans if p["planId"] == primary_plan_id), None)
+    
+    return {
+        "primary_plan_id": primary_plan_id,
+        "plan": plan,
+    }
+
+
+@router.post("/primary-plan/clear")
+async def clear_primary_plan(user: AuthUser = Depends(require_auth)):
+    """
+    Clear the user's primary plan selection from DynamoDB.
+    """
+    from app.utils.dynamo import clear_primary_plan
+    
+    success = clear_primary_plan(user.sub)
+    if success:
+        return {"success": True, "message": "Primary plan cleared"}
+    else:
+        raise HTTPException(status_code=500, detail="Failed to clear primary plan")
+
